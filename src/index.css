@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Mainlux';
+  src: url('/assets/MAINLUX-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --color-gold: #F7A70C;
+  --color-red: #E60004;
+  --color-grey: #68676C;
+  --color-bg: #0a0a0a;
+  --font-mainlux: 'Mainlux', sans-serif;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  background-color: #0a0a0a;
+  min-height: 100dvh;
+  font-family: 'Mainlux', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tipo-btn {
+  color: #ffffff;
+  border-color: #ffffff;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tipo-btn:hover,
+.tipo-btn:active {
+  color: #F7A70C;
+  border-color: #F7A70C;
+}
