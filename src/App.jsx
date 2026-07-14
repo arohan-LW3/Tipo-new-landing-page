@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import FermentationModal from './FermentationModal'
+import TraceabilityPage from './TraceabilityPage'
 
 const INSTAGRAM_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -46,8 +48,9 @@ function VideoPlayer({ videoId }) {
   )
 }
 
-export default function App() {
+function HomePage() {
   const [showModal, setShowModal] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <>
@@ -78,7 +81,7 @@ export default function App() {
         <div className="w-full flex flex-col items-center" style={{marginTop: '24px', gap: '12px'}}>
           {[
             { label: 'Our Fermentation Process', href: null, onClick: () => setShowModal(true) },
-            { label: 'Traceability', href: null, onClick: () => {} },
+            { label: 'Traceability', href: null, onClick: () => navigate('/traceability') },
             { label: 'Youtube', href: 'https://www.youtube.com/@TipoHeritage' },
             { label: 'Instagram', href: 'https://www.instagram.com/tipo.heritage' },
             { label: 'Website', href: 'https://www.heritagetipo.com' },
@@ -117,5 +120,14 @@ export default function App() {
 
     {showModal && <FermentationModal onClose={() => setShowModal(false)} />}
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/traceability" element={<TraceabilityPage />} />
+    </Routes>
   )
 }
