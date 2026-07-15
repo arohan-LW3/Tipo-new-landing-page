@@ -165,7 +165,7 @@ export default function FermentationModal({ onClose }) {
   return (
     <div
       className="fixed inset-0 z-50"
-      style={{ backgroundColor: '#000' }}
+      style={{ backgroundColor: '#000', overscrollBehavior: 'contain' }}
       onClick={onClose}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
