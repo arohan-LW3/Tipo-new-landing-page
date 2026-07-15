@@ -132,6 +132,13 @@ export default function FermentationModal({ onClose }) {
     else if (dy > 40) goBack()
   }
 
+  // Block pull-to-refresh on all mobile browsers when modal is open
+  useEffect(() => {
+    const block = (e) => e.preventDefault()
+    document.addEventListener('touchmove', block, { passive: false })
+    return () => document.removeEventListener('touchmove', block)
+  }, [])
+
   // Register wheel + key listeners ONCE
   useEffect(() => {
     let gestureActive = false
@@ -165,7 +172,7 @@ export default function FermentationModal({ onClose }) {
   return (
     <div
       className="fixed inset-0 z-50"
-      style={{ backgroundColor: '#000', overscrollBehavior: 'contain' }}
+      style={{ backgroundColor: '#000', overscrollBehavior: 'contain', touchAction: 'none' }}
       onClick={onClose}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
