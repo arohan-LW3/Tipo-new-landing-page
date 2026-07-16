@@ -66,12 +66,11 @@ const TILES = [
   {
     title: 'Extraction & Stabilisation',
     details: [
-      { label: 'FACILITY', value: 'Bengaluru Lab' },
-      { label: 'BATCH ID', value: 'EXT-2025-04' },
-      { label: 'METHOD', value: 'Cold Press' },
-      { label: 'DURATION', value: '5 Days' },
-      { label: 'YIELD', value: '42 L' },
-      { label: 'STATUS', value: 'Completed' },
+      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
+      { label: 'START DATE', value: '21 Apr 2025' },
+      { label: 'END DATE', value: '21 Jun 2025' },
+      { label: 'DURATION', value: '2 Months' },
+      { label: 'FACILITY', value: 'Guwahati Biotech Park' },
     ],
   },
   {
