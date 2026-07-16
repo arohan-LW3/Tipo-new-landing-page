@@ -29,10 +29,6 @@ const TILES = [
     details: [
       { label: 'GEO LOCATION', value: '26.2006°N, 92.9376°E' },
       { label: 'DATE', value: '02 Dec 2024' },
-      { label: 'HERBS COLLECTED', value: '60+ Varieties' },
-      { label: 'REGION', value: 'Assam, India' },
-      { label: 'METHOD', value: 'Hand-picked' },
-      { label: 'STATUS', value: 'Completed' },
     ],
   },
   {
@@ -40,10 +36,6 @@ const TILES = [
     details: [
       { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
       { label: 'DATE', value: '10 Jan 2025' },
-      { label: 'BATCH SIZE', value: '50 kg' },
-      { label: 'FACILITY', value: 'Guwahati Unit' },
-      { label: 'DURATION', value: '3 Days' },
-      { label: 'STATUS', value: 'Completed' },
     ],
   },
   {
@@ -51,32 +43,24 @@ const TILES = [
     details: [
       { label: 'GEO LOCATION', value: '23.4567°N, 85.3240°E' },
       { label: 'DATE', value: '12 Mar 2025' },
-      { label: 'NAME OF SHG', value: 'Erroi Mahila SHG' },
-      { label: 'STORAGE FACILITY', value: 'Guwahati Central Unit' },
-      { label: 'DURATION', value: '14 Days' },
-      { label: 'STATUS', value: 'In Progress' },
+      { label: 'PREPARED BY', value: 'Erroi Mahila SHG' },
     ],
   },
   {
     title: 'Fermentation-Storage Facility',
     details: [
-      { label: 'FACILITY NAME', value: 'Guwahati Central Unit' },
-      { label: 'CAPACITY', value: '500 L' },
-      { label: 'TEMPERATURE', value: '18–22°C' },
-      { label: 'HUMIDITY', value: '65–70%' },
-      { label: 'DURATION', value: '20–25 Days' },
-      { label: 'STATUS', value: 'In Progress' },
+      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
+      { label: 'START DATE', value: '26 Mar 2025' },
+      { label: 'END DATE', value: '20 Apr 2025' },
+      { label: 'STORAGE FACILITY', value: 'Guwahati Central Unit' },
     ],
   },
   {
     title: 'Transportation',
     details: [
-      { label: 'ORIGIN', value: 'Guwahati, Assam' },
-      { label: 'DESTINATION', value: 'Bengaluru' },
-      { label: 'DISTANCE', value: '1,890 km' },
-      { label: 'CARRIER', value: 'Refrigerated Transport' },
-      { label: 'DATE', value: '18 Apr 2025' },
-      { label: 'STATUS', value: 'Completed' },
+      { label: 'FROM', value: '26.1445°N, 91.7362°E' },
+      { label: 'TO', value: '12.9716°N, 77.5946°E' },
+      { label: 'DURATION', value: '3 Days' },
     ],
   },
   {
@@ -93,17 +77,12 @@ const TILES = [
   {
     title: 'Bottling',
     details: [
-      { label: 'FACILITY', value: 'Bengaluru Unit' },
-      { label: 'BATCH ID', value: 'BOT-2025-05' },
-      { label: 'BOTTLES', value: '1,200 Units' },
-      { label: 'LABEL', value: 'Heritage Tipo 500ml' },
+      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
       { label: 'DATE', value: '05 May 2025' },
-      { label: 'STATUS', value: 'Completed' },
+      { label: 'FACILITY', value: 'Guwahati Biotech Park' },
     ],
   },
 ]
-
-const CONTENT_HEIGHT = 400
 
 function Tile({ tile, isOpen, onClick, now }) {
   const contentRef = useRef(null)
@@ -111,13 +90,14 @@ function Tile({ tile, isOpen, onClick, now }) {
 
   useEffect(() => {
     if (!contentRef.current) return
+    const fullHeight = contentRef.current.scrollHeight
     if (!initialized.current) {
-      gsap.set(contentRef.current, { height: isOpen ? CONTENT_HEIGHT : 0 })
+      gsap.set(contentRef.current, { height: isOpen ? fullHeight : 0 })
       initialized.current = true
       return
     }
     gsap.to(contentRef.current, {
-      height: isOpen ? CONTENT_HEIGHT : 0,
+      height: isOpen ? fullHeight : 0,
       duration: 0.4,
       ease: 'power2.inOut',
     })
