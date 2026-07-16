@@ -220,7 +220,7 @@ function Tile({ tile, isOpen, onClick, now }) {
 }
 
 export default function TraceabilityPage() {
-  const [openIndex, setOpenIndex] = useState(1)
+  const [openIndex, setOpenIndex] = useState(0)
   const navigate = useNavigate()
   const now = useLiveClock()
 
