@@ -130,7 +130,7 @@ function Tile({ tile, isOpen, onClick, now }) {
     <div
       style={{
         backgroundColor: '#000000',
-        border: `0.5px solid ${isOpen ? '#F7A70C' : '#ffffff'}`,
+        border: `0.5px solid ${isOpen ? 'rgba(247,167,12,0.75)' : '#ffffff'}`,
         borderRadius: '4px',
         overflow: 'hidden',
         cursor: isOpen ? 'default' : 'pointer',
@@ -142,11 +142,18 @@ function Tile({ tile, isOpen, onClick, now }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 20px',
+        padding: isOpen ? '0' : '0 20px',
         height: isOpen ? '48px' : '38px',
         transition: 'height 0.4s',
+        overflow: 'hidden',
       }}>
-        {!isOpen && (
+        {isOpen ? (
+          <img
+            src="/assets/decorative Pattern updated.svg"
+            alt=""
+            style={{ width: '100%', height: '48px', display: 'block', objectFit: 'cover', opacity: 0.75 }}
+          />
+        ) : (
           <span style={{ color: '#fff', fontSize: '0.85rem', letterSpacing: '0.03em' }}>
             {tile.title}
           </span>
@@ -155,7 +162,7 @@ function Tile({ tile, isOpen, onClick, now }) {
 
       {/* Expanded content */}
       <div ref={contentRef} style={{ height: 0, overflow: 'hidden' }}>
-        <div style={{ borderTop: '0.5px solid #2a2a2a', padding: '16px 20px 0' }}>
+        <div style={{ padding: '16px 20px 0' }}>
 
           {/* Live timestamp + Large title */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
