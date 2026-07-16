@@ -146,9 +146,11 @@ function Tile({ tile, isOpen, onClick, now }) {
         height: isOpen ? '48px' : '38px',
         transition: 'height 0.4s',
       }}>
-        <span style={{ color: '#fff', fontSize: '0.85rem', letterSpacing: '0.03em' }}>
-          {tile.title}
-        </span>
+        {!isOpen && (
+          <span style={{ color: '#fff', fontSize: '0.85rem', letterSpacing: '0.03em' }}>
+            {tile.title}
+          </span>
+        )}
       </div>
 
       {/* Expanded content */}
