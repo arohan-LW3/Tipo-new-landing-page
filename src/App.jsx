@@ -78,36 +78,35 @@ function HomePage() {
         </div>
 
         {/* Stacked Buttons */}
-        <div className="w-full flex flex-col items-center" style={{marginTop: '24px', gap: '12px'}}>
-          {[
-            { label: 'Our Fermentation Process', href: null, onClick: () => setShowModal(true) },
-            { label: 'Traceability', href: null, onClick: () => navigate('/traceability') },
-            { label: 'Youtube', href: 'https://www.youtube.com/@TipoHeritage' },
-            { label: 'Instagram', href: 'https://www.instagram.com/tipo.heritage' },
-            { label: 'Website', href: 'https://www.heritagetipo.com' },
-          ].map(({ label, href, onClick }) =>
-            href ? (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener"
-                style={{width: '70%'}}
-                className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center text-[0.85rem] tracking-wide no-underline"
-              >
-                {label}
-              </a>
-            ) : (
-              <button
-                key={label}
-                onClick={onClick}
-                style={{width: '70%'}}
-                className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
-              >
-                {label}
-              </button>
-            )
-          )}
+        <div className="w-full flex flex-col" style={{marginTop: '24px', gap: '12px'}}>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
+          >
+            Our Fermentation Process
+          </button>
+          <button
+            onClick={() => navigate('/traceability')}
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
+          >
+            Traceability
+          </button>
+          <div className="w-full flex" style={{gap: '12px'}}>
+            <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
+              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
+              {YOUTUBE_SVG}
+            </a>
+            <a href="https://www.instagram.com/tipo.heritage" target="_blank" rel="noopener"
+              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
+              {INSTAGRAM_SVG}
+            </a>
+            <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
+              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
+              <img src="/assets/tipo-logo-t.svg" alt="TIPO" style={{height: '24px', width: 'auto'}} />
+            </a>
+          </div>
         </div>
 
         {/* Footer */}
