@@ -104,7 +104,7 @@ function HomePage() {
             </a>
             <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
               style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
-              <img src="/assets/tipo-logo-t.svg" alt="TIPO" style={{height: '24px', width: 'auto'}} />
+              <img src="/assets/tipo-logo-t.svg" alt="TIPO" style={{height: '52px', width: 'auto', transform: 'translateY(-2px)'}} />
             </a>
           </div>
         </div>
