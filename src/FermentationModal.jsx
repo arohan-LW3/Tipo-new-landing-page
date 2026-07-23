@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import gsap from 'gsap'
 
 const CARDS = [
-  { text: 'Collection of 60+ herbs', img: '/assets/Collection of 60%2B herbs.webp', imgScale: 1.12 },
+  { text: 'Collection of 60+ herbs', img: '/assets/Collection of 60+ herbs.webp', imgScale: 1.12 },
   { text: 'Preparation of EPOB (starter cake)', img: '/assets/Preparation of EPOB (starter cake).webp' },
   { text: 'Controlled burning of husk', img: '/assets/Controlled burning of husk.webp' },
   { text: 'Cooking rice', img: '/assets/Cooking rice.webp' },
@@ -206,18 +206,17 @@ export default function FermentationModal({ onClose }) {
           >
             <CardBody index={i} />
             {i === current && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onClose() }}
+              <div
                 style={{
                   position: 'absolute', top: '16px', right: '20px',
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  backgroundColor: '#3a3a3a', border: 'none',
-                  color: '#fff', fontSize: '0.75rem', cursor: 'pointer',
+                  minWidth: '28px', height: '28px', padding: '0 10px', borderRadius: '14px',
+                  backgroundColor: '#3a3a3a',
+                  color: '#fff', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.02em',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                ✕
-              </button>
+                {current + 1}/{CARDS.length}
+              </div>
             )}
           </div>
         </div>
