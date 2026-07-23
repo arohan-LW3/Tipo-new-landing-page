@@ -27,49 +27,51 @@ const TILES = [
   {
     title: 'Collection of Herbs',
     details: [
-      { label: 'GEO LOCATION', value: '26.2006°N, 92.9376°E' },
-      { label: 'DATE', value: '02 Dec 2024' },
+      { label: 'GEO LOCATION', value: '27.764256°N, 94.992861°E' },
+      { label: 'DATE', value: '09 Oct 2025' },
     ],
   },
   {
     title: 'EPOB Preparation',
     details: [
-      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'DATE', value: '10 Jan 2025' },
+      { label: 'GEO LOCATION 1', value: '27.567237°N, 94.742544°E' },
+      { label: 'GEO LOCATION 2', value: '27.761967°N, 95.064634°E' },
+      { label: 'DATE', value: '10 Oct 2025' },
     ],
   },
   {
     title: 'Preparation of Fermentation',
     details: [
-      { label: 'GEO LOCATION', value: '23.4567°N, 85.3240°E' },
-      { label: 'DATE', value: '12 Mar 2025' },
-      { label: 'PREPARED BY', value: 'Erroi Mahila SHG' },
+      { label: 'GEO LOCATION 1', value: '27.567237°N, 94.742544°E' },
+      { label: 'GEO LOCATION 2', value: '27.761967°N, 95.064634°E' },
+      { label: 'DATE', value: '02 Nov 2025' },
+      { label: 'PREPARED BY', value: 'Ardha SHG & Polo SHG' },
     ],
   },
   {
     title: 'Fermentation-Storage Facility',
     details: [
-      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'START DATE', value: '26 Mar 2025' },
-      { label: 'END DATE', value: '20 Apr 2025' },
-      { label: 'STORAGE FACILITY', value: 'Guwahati Central Unit' },
+      { label: 'GEO LOCATION', value: '27.761967°N, 95.064634°E' },
+      { label: 'START DATE', value: '02 Nov 2025' },
+      { label: 'END DATE', value: '25 Nov 2025' },
+      { label: 'STORAGE FACILITY', value: 'Laimekuri' },
     ],
   },
   {
     title: 'Transportation',
     details: [
-      { label: 'FROM', value: '26.1445°N, 91.7362°E' },
-      { label: 'TO', value: '12.9716°N, 77.5946°E' },
-      { label: 'DURATION', value: '3 Days' },
+      { label: 'FROM', value: 'Laimekuri (27.761967°N, 95.064634°E)' },
+      { label: 'TO', value: 'Guwahati Biotech Park (26.194452°N, 91.671489°E)' },
+      { label: 'DURATION', value: '10 Hours' },
     ],
   },
   {
     title: 'Extraction & Stabilisation',
     details: [
       { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'START DATE', value: '21 Apr 2025' },
-      { label: 'END DATE', value: '21 Jun 2025' },
-      { label: 'DURATION', value: '2 Months' },
+      { label: 'START DATE', value: '25 Nov 2025' },
+      { label: 'END DATE', value: '26 Feb 2026' },
+      { label: 'DURATION', value: '3 Months' },
       { label: 'FACILITY', value: 'Guwahati Biotech Park' },
     ],
   },
@@ -77,7 +79,7 @@ const TILES = [
     title: 'Bottling',
     details: [
       { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'DATE', value: '05 May 2025' },
+      { label: 'DATE', value: '07 Mar 2026' },
       { label: 'FACILITY', value: 'Guwahati Biotech Park' },
     ],
   },
