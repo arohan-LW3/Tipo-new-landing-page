@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import gsap from 'gsap'
 
 const CARDS = [
-  { text: 'Collection of 60+ herbs', img: '/assets/Collection of 60+ herbs.webp', imgScale: 1.12 },
+  { text: 'Collection of 60+ herbs', img: '/assets/Collection of 60 herbs.webp', imgScale: 1.12 },
   { text: 'Preparation of EPOB (starter cake)', img: '/assets/Preparation of EPOB (starter cake).webp' },
   { text: 'Controlled burning of husk', img: '/assets/Controlled burning of husk.webp' },
   { text: 'Cooking rice', img: '/assets/Cooking rice.webp' },
