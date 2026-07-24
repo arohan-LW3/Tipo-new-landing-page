@@ -90,6 +90,7 @@ const MUTED_LINE = 'rgba(255,255,255,0.22)'
 const MUTED_DOT = 'rgba(255,255,255,0.35)'
 const DOT_R = 8
 const PATH_UNITS = 1000
+const CLOSED_HEIGHT = 131
 
 function DetailRows({ details }) {
   return (
@@ -175,6 +176,7 @@ function Tile({ tile, index, isOpen, side, onClick, now, dotAnchorRef, boxRef })
             overflow: 'hidden',
             cursor: isOpen ? 'default' : 'pointer',
             position: 'relative',
+            height: isOpen ? 'auto' : `${CLOSED_HEIGHT}px`,
           }}
         >
           {/* Header */}
