@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import gsap from 'gsap'
 
 function useLiveClock() {
   const [now, setNow] = useState(() => new Date())
@@ -90,7 +89,8 @@ const MUTED_LINE = 'rgba(255,255,255,0.22)'
 const MUTED_DOT = 'rgba(255,255,255,0.35)'
 const DOT_R = 8
 const PATH_UNITS = 1000
-const CLOSED_HEIGHT = 131
+const CARD_WIDTH = '88%'
+const CARD_HEIGHT = 246
 
 function DetailRows({ details }) {
   return (
@@ -126,18 +126,7 @@ function DetailRows({ details }) {
   )
 }
 
-function Tile({ tile, index, isOpen, side, onClick, now, dotAnchorRef, boxRef }) {
-  const wrapRef = useRef(null)
-
-  useEffect(() => {
-    if (!wrapRef.current) return
-    gsap.to(wrapRef.current, {
-      width: isOpen ? '92%' : '68%',
-      duration: 0.45,
-      ease: 'power2.inOut',
-    })
-  }, [isOpen])
-
+function Tile({ tile, index, isActive, side, now, dotAnchorRef, boxRef }) {
   const dateStr = formatDate(now)
   const { time: timePart, meridiem } = formatTime(now)
 
@@ -150,17 +139,14 @@ function Tile({ tile, index, isOpen, side, onClick, now, dotAnchorRef, boxRef })
         marginBottom: index < TILES.length - 1 ? '54px' : '0',
       }}
     >
-      <div
-        ref={wrapRef}
-        style={{ width: isOpen ? '92%' : '68%', position: 'relative' }}
-      >
+      <div style={{ width: CARD_WIDTH, position: 'relative' }}>
         {/* connector anchor dot: always floats out in the empty gutter beside the card, never touching its border */}
         <div
           ref={dotAnchorRef}
           style={{
             position: 'absolute',
             top: '50%',
-            [side === 'left' ? 'right' : 'left']: isOpen ? '-18px' : '-26px',
+            [side === 'left' ? 'right' : 'left']: '-22px',
             width: '1px',
             height: '1px',
           }}
@@ -168,89 +154,61 @@ function Tile({ tile, index, isOpen, side, onClick, now, dotAnchorRef, boxRef })
 
         <div
           ref={boxRef}
-          onClick={onClick}
           style={{
             backgroundColor: '#0a0a0a',
-            border: `0.5px solid ${isOpen ? 'rgba(247,167,12,0.75)' : 'rgba(255,255,255,0.35)'}`,
+            border: `0.5px solid ${isActive ? 'rgba(247,167,12,0.75)' : 'rgba(255,255,255,0.35)'}`,
             borderRadius: '4px',
             overflow: 'hidden',
-            cursor: isOpen ? 'default' : 'pointer',
             position: 'relative',
-            height: isOpen ? 'auto' : `${CLOSED_HEIGHT}px`,
+            height: `${CARD_HEIGHT}px`,
+            transition: 'border-color 0.3s ease',
           }}
         >
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: isOpen ? '16px 20px 0' : '14px 16px 0',
-          }}>
-            <span style={{
-              color: GOLD,
-              fontSize: isOpen ? '0.75rem' : '0.7rem',
-              letterSpacing: '0.03em',
-              fontWeight: isOpen ? 400 : 500,
-            }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 0' }}>
+            <span style={{ color: GOLD, fontSize: '0.75rem', letterSpacing: '0.03em' }}>
               {tile.title}
             </span>
           </div>
 
-          {isOpen && (
-            <div style={{ padding: '16px 20px 0' }}>
-              {/* Live timestamp + Large title */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                <div>
-                  <div style={{ color: '#666666', fontSize: '0.65rem', letterSpacing: '0.08em', marginBottom: '4px' }}>
-                    {dateStr}
-                  </div>
-                  <div style={{ color: '#ffffff', fontSize: '1.05rem', letterSpacing: '0.02em', lineHeight: 1 }}>
-                    {timePart}{' '}
-                    <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
-                      {meridiem}
-                    </span>
-                  </div>
+          <div style={{ padding: '16px 20px 0' }}>
+            {/* Live timestamp + Large title */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div>
+                <div style={{ color: '#666666', fontSize: '0.65rem', letterSpacing: '0.08em', marginBottom: '4px' }}>
+                  {dateStr}
                 </div>
-                <div style={{ maxWidth: '56%', textAlign: 'right' }}>
-                  <span style={{
-                    color: '#ffffff',
-                    fontSize: '1.0rem',
-                    fontWeight: '700',
-                    lineHeight: '1.25',
-                    letterSpacing: '0.01em',
-                    textTransform: 'uppercase',
-                    display: 'block',
-                  }}>
-                    {tile.title}
+                <div style={{ color: '#ffffff', fontSize: '1.05rem', letterSpacing: '0.02em', lineHeight: 1 }}>
+                  {timePart}{' '}
+                  <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
+                    {meridiem}
                   </span>
                 </div>
               </div>
-
-              <DetailRows details={tile.details} />
-              <div style={{ paddingBottom: '20px' }} />
-            </div>
-          )}
-
-          {!isOpen && (
-            <div style={{ position: 'relative' }}>
-              <div style={{ padding: '12px 16px 18px' }}>
-                <DetailRows details={tile.details} />
+              <div style={{ maxWidth: '56%', textAlign: 'right' }}>
+                <span style={{
+                  color: '#ffffff',
+                  fontSize: '1.0rem',
+                  fontWeight: '700',
+                  lineHeight: '1.25',
+                  letterSpacing: '0.01em',
+                  textTransform: 'uppercase',
+                  display: 'block',
+                }}>
+                  {tile.title}
+                </span>
               </div>
-              {/* darkening veil: clear near top, opaque toward bottom, hides details until opened */}
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to bottom, rgba(10,10,10,0) 0%, rgba(10,10,10,0.55) 45%, rgba(10,10,10,0.96) 100%)',
-                pointerEvents: 'none',
-              }} />
             </div>
-          )}
+
+            <DetailRows details={tile.details} />
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function useConnectorPoints(containerRef, anchorRefs, boxRefs, watch) {
+function useConnectorPoints(containerRef, anchorRefs, boxRefs) {
   const [points, setPoints] = useState([])
   const [boxes, setBoxes] = useState([])
 
@@ -277,7 +235,7 @@ function useConnectorPoints(containerRef, anchorRefs, boxRefs, watch) {
     const start = performance.now()
     const tick = (t) => {
       compute()
-      if (t - start < 600) raf = requestAnimationFrame(tick)
+      if (t - start < 400) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     const onResize = () => compute()
@@ -286,20 +244,18 @@ function useConnectorPoints(containerRef, anchorRefs, boxRefs, watch) {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', onResize)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, watch)
+  }, [compute])
 
   return { points, boxes }
 }
 
-const Connector = memo(function Connector({ points, boxes, openIndex, containerSize }) {
-  const prevOpenIndexRef = useRef(openIndex)
-  const flowAnchor = Math.min(prevOpenIndexRef.current, openIndex)
+const Connector = memo(function Connector({ points, boxes, activeIndex, containerSize }) {
+  const prevActiveRef = useRef(activeIndex)
+  const flowAnchor = Math.min(prevActiveRef.current, activeIndex)
 
   useEffect(() => {
-    prevOpenIndexRef.current = openIndex
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openIndex])
+    prevActiveRef.current = activeIndex
+  }, [activeIndex])
 
   if (points.length < 2 || !containerSize.width) return null
 
@@ -339,7 +295,7 @@ const Connector = memo(function Connector({ points, boxes, openIndex, containerS
       {points.slice(0, -1).map((p0, i) => {
         const p1 = points[i + 1]
         const d = curve(p0, p1, boxes[i]?.bottom, boxes[i + 1]?.top)
-        const passed = i < openIndex
+        const passed = i < activeIndex
         const delay = Math.min(Math.abs(i - flowAnchor), 4) * 0.2
         return (
           <g key={i}>
@@ -365,7 +321,7 @@ const Connector = memo(function Connector({ points, boxes, openIndex, containerS
             cx={p.x}
             cy={p.y}
             r={DOT_R}
-            fill={i <= openIndex ? GOLD : MUTED_DOT}
+            fill={i <= activeIndex ? GOLD : MUTED_DOT}
             style={{ transition: `fill 1.4s ease-in-out ${delay}s` }}
           />
         )
@@ -374,8 +330,55 @@ const Connector = memo(function Connector({ points, boxes, openIndex, containerS
   )
 })
 
+function useScrollActiveIndex(boxRefs, count) {
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useEffect(() => {
+    let raf = null
+    const update = () => {
+      raf = null
+
+      const doc = document.documentElement
+      const atBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - 2
+      if (atBottom) {
+        setActiveIndex(count - 1)
+        return
+      }
+
+      const refLine = window.innerHeight * 0.35
+      let closest = 0
+      let closestDist = Infinity
+      for (let i = 0; i < count; i++) {
+        const el = boxRefs.current[i]
+        if (!el) continue
+        const r = el.getBoundingClientRect()
+        const center = r.top + r.height / 2
+        const dist = Math.abs(center - refLine)
+        if (dist < closestDist) {
+          closestDist = dist
+          closest = i
+        }
+      }
+      setActiveIndex(closest)
+    }
+    const onScroll = () => {
+      if (raf != null) return
+      raf = requestAnimationFrame(update)
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf != null) cancelAnimationFrame(raf)
+    }
+  }, [boxRefs, count])
+
+  return activeIndex
+}
+
 export default function TraceabilityPage() {
-  const [openIndex, setOpenIndex] = useState(0)
   const navigate = useNavigate()
   const now = useLiveClock()
 
@@ -384,7 +387,8 @@ export default function TraceabilityPage() {
   const boxRefs = useRef([])
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
 
-  const { points, boxes } = useConnectorPoints(containerRef, anchorRefs, boxRefs, [openIndex])
+  const { points, boxes } = useConnectorPoints(containerRef, anchorRefs, boxRefs)
+  const activeIndex = useScrollActiveIndex(boxRefs, TILES.length)
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -398,7 +402,7 @@ export default function TraceabilityPage() {
     const start = performance.now()
     const tick = (t) => {
       measure()
-      if (t - start < 600) raf = requestAnimationFrame(tick)
+      if (t - start < 400) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     window.addEventListener('resize', measure)
@@ -406,7 +410,7 @@ export default function TraceabilityPage() {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', measure)
     }
-  }, [openIndex])
+  }, [])
 
   return (
     <div
@@ -446,14 +450,13 @@ export default function TraceabilityPage() {
               tile={tile}
               index={i}
               side={i % 2 === 0 ? 'left' : 'right'}
-              isOpen={openIndex === i}
-              onClick={() => { if (openIndex !== i) setOpenIndex(i) }}
+              isActive={activeIndex === i}
               now={now}
               dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
               boxRef={(el) => { boxRefs.current[i] = el }}
             />
           ))}
-          <Connector points={points} boxes={boxes} openIndex={openIndex} containerSize={containerSize} />
+          <Connector points={points} boxes={boxes} activeIndex={activeIndex} containerSize={containerSize} />
         </div>
 
       </div>
