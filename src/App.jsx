@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import FermentationModal from './FermentationModal'
 import TraceabilityPage from './TraceabilityPage'
+import ContactPage from './ContactPage'
 
 const INSTAGRAM_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -62,16 +63,6 @@ function HomePage() {
           <img src="/assets/LOGO new.svg" alt="TIPO" className="w-[140px]" />
         </div>
 
-        {/* Tagline + Cover Image */}
-        <div className="w-full flex flex-col items-center" style={{gap: '8px'}}>
-          <p className="w-full text-center text-white text-[0.75rem] tracking-[0.1em] uppercase">
-            Crafted with passion. Fermented to perfection.
-          </p>
-          <div className="w-full">
-            <img src="/assets/cover image new.svg" alt="TIPO" className="w-full h-auto block" />
-          </div>
-        </div>
-
         {/* YouTube Player */}
         <div className="w-full" style={{marginTop: '24px'}}>
           <VideoPlayer videoId="QipHkYuCm74" />
@@ -93,20 +84,28 @@ function HomePage() {
           >
             Traceability
           </button>
-          <div className="w-full flex" style={{gap: '12px'}}>
-            <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
-              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
-              {YOUTUBE_SVG}
-            </a>
-            <a href="https://www.instagram.com/tipo.heritage" target="_blank" rel="noopener"
-              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
-              {INSTAGRAM_SVG}
-            </a>
-            <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
-              style={{flex: 1}} className="tipo-btn h-[48px] border rounded-[4px] flex items-center justify-center no-underline">
-              <img src="/assets/tipo-logo-t.svg" alt="TIPO" style={{height: '52px', width: 'auto', transform: 'translateY(-2px)'}} />
-            </a>
-          </div>
+          <button
+            onClick={() => navigate('/contact')}
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
+          >
+            Contact Us
+          </button>
+          <a href="https://www.instagram.com/tipo.heritage" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#ffffff', color: '#ffffff'}}
+            className="tipo-btn h-[48px] border rounded-[4px] bg-transparent flex items-center justify-center no-underline">
+            {INSTAGRAM_SVG}
+          </a>
+          <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#ffffff', color: '#ffffff'}}
+            className="tipo-btn h-[48px] border rounded-[4px] bg-transparent flex items-center justify-center no-underline">
+            <img src="/assets/tipo-logo-t-icon.svg" alt="Website" className="w-6 h-6" />
+          </a>
+          <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#ffffff', color: '#ffffff'}}
+            className="tipo-btn h-[48px] border rounded-[4px] bg-transparent flex items-center justify-center no-underline">
+            {YOUTUBE_SVG}
+          </a>
         </div>
 
         {/* Footer */}
@@ -127,6 +126,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/traceability" element={<TraceabilityPage />} />
+      <Route path="/contact" element={<ContactPage />} />
     </Routes>
   )
 }
