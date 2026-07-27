@@ -219,6 +219,20 @@ export default function FermentationModal({ onClose }) {
               </div>
             )}
           </div>
+          {i === current && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onClose() }}
+              style={{
+                position: 'absolute', top: '-44px', right: '-14px',
+                width: '28px', height: '28px', borderRadius: '50%',
+                backgroundColor: '#3a3a3a', border: '0.5px solid #F7A70C',
+                color: '#fff', fontSize: '0.75rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              ✕
+            </button>
+          )}
         </div>
       ))}
     </div>
