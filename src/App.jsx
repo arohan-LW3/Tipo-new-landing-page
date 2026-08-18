@@ -70,6 +70,21 @@ function HomePage() {
 
         {/* Stacked Buttons */}
         <div className="w-full flex flex-col" style={{marginTop: '24px', gap: '12px'}}>
+          <a href="https://www.instagram.com/tipo.heritage" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
+            Instagram
+          </a>
+          <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
+            Website
+          </a>
+          <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
+            YouTube
+          </a>
           <button
             onClick={() => setShowModal(true)}
             style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
@@ -91,21 +106,6 @@ function HomePage() {
           >
             Contact Us
           </button>
-          <a href="https://www.instagram.com/tipo.heritage" target="_blank" rel="noopener"
-            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
-            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
-            Instagram
-          </a>
-          <a href="https://www.heritagetipo.com" target="_blank" rel="noopener"
-            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
-            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
-            Website
-          </a>
-          <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
-            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
-            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
-            YouTube
-          </a>
         </div>
 
         {/* Footer */}

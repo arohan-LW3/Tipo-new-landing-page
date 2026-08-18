@@ -1,27 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-function useLiveClock() {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return now
-}
-
-function formatDate(d) {
-  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
-}
-
-function formatTime(d) {
-  const h = d.getHours()
-  const m = d.getMinutes().toString().padStart(2, '0')
-  const hh = h % 12 || 12
-  const mer = h < 12 ? 'am' : 'pm'
-  return { time: `${hh}:${m}`, meridiem: mer }
-}
-
 const TILES = [
   {
     title: 'Collection of Herbs',
@@ -42,18 +21,8 @@ const TILES = [
     title: 'Preparation of Fermentation',
     details: [
       { label: 'GEO LOCATION 1', value: '27.567237°N, 94.742544°E' },
-      { label: 'GEO LOCATION 2', value: '27.761967°N, 95.064634°E' },
       { label: 'DATE', value: '02 Nov 2025' },
       { label: 'PREPARED BY', value: 'Ardha SHG & Polo SHG' },
-    ],
-  },
-  {
-    title: 'Fermentation-Storage Facility',
-    details: [
-      { label: 'GEO LOCATION', value: '27.761967°N, 95.064634°E' },
-      { label: 'START DATE', value: '02 Nov 2025' },
-      { label: 'END DATE', value: '25 Nov 2025' },
-      { label: 'STORAGE FACILITY', value: 'Laimekuri' },
     ],
   },
   {
@@ -62,6 +31,14 @@ const TILES = [
       { label: 'FROM', value: 'Laimekuri (27.761967°N, 95.064634°E)' },
       { label: 'TO', value: 'Guwahati Biotech Park (26.194452°N, 91.671489°E)' },
       { label: 'DURATION', value: '10 Hours' },
+    ],
+  },
+  {
+    title: 'Fermentation-Storage Facility',
+    details: [
+      { label: 'GEO LOCATION', value: '26.17°N, 91.71°E' },
+      { label: 'DURATION', value: '23 Days' },
+      { label: 'STORAGE FACILITY', value: 'Guwahati Biotech Park' },
     ],
   },
   {
@@ -90,7 +67,6 @@ const MUTED_DOT = 'rgba(255,255,255,0.35)'
 const DOT_R = 8
 const PATH_UNITS = 1000
 const CARD_WIDTH = '88%'
-const CARD_HEIGHT = 246
 
 function DetailRows({ details }) {
   return (
@@ -126,10 +102,7 @@ function DetailRows({ details }) {
   )
 }
 
-function Tile({ tile, index, isActive, side, now, dotAnchorRef, boxRef }) {
-  const dateStr = formatDate(now)
-  const { time: timePart, meridiem } = formatTime(now)
-
+function Tile({ tile, index, isActive, side, dotAnchorRef, boxRef }) {
   return (
     <div
       style={{
@@ -160,46 +133,17 @@ function Tile({ tile, index, isActive, side, now, dotAnchorRef, boxRef }) {
             borderRadius: '4px',
             overflow: 'hidden',
             position: 'relative',
-            height: `${CARD_HEIGHT}px`,
             transition: 'border-color 0.3s ease',
           }}
         >
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 0' }}>
-            <span style={{ color: GOLD, fontSize: '0.75rem', letterSpacing: '0.03em' }}>
+            <span style={{ color: GOLD, fontSize: '1.0rem', letterSpacing: '0.03em' }}>
               {tile.title}
             </span>
           </div>
 
-          <div style={{ padding: '16px 20px 0' }}>
-            {/* Live timestamp + Large title */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-              <div>
-                <div style={{ color: '#666666', fontSize: '0.65rem', letterSpacing: '0.08em', marginBottom: '4px' }}>
-                  {dateStr}
-                </div>
-                <div style={{ color: '#ffffff', fontSize: '1.05rem', letterSpacing: '0.02em', lineHeight: 1 }}>
-                  {timePart}{' '}
-                  <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
-                    {meridiem}
-                  </span>
-                </div>
-              </div>
-              <div style={{ maxWidth: '56%', textAlign: 'right' }}>
-                <span style={{
-                  color: '#ffffff',
-                  fontSize: '1.0rem',
-                  fontWeight: '700',
-                  lineHeight: '1.25',
-                  letterSpacing: '0.01em',
-                  textTransform: 'uppercase',
-                  display: 'block',
-                }}>
-                  {tile.title}
-                </span>
-              </div>
-            </div>
-
+          <div style={{ padding: '20px 20px 0' }}>
             <DetailRows details={tile.details} />
           </div>
         </div>
@@ -266,14 +210,13 @@ const Connector = memo(function Connector({ points, boxes, activeIndex, containe
     if (Math.abs(dx) < 1) {
       return `M ${p0.x} ${p0.y} L ${p1.x} ${p1.y}`
     }
-    const naturalMid = p0.y + dy / 2
-    const margin = 22
-    let midY = naturalMid
-    if (lowerBound != null && upperBound != null) {
-      midY = lowerBound + margin < upperBound - margin
-        ? Math.min(Math.max(naturalMid, lowerBound + margin), upperBound - margin)
-        : (lowerBound + upperBound) / 2
-    }
+    // Bend sits at the exact center of the real gap between the two cards'
+    // edges, so the vertical clearance above and below is always equal —
+    // not just "at least some minimum", which used to alternate depending
+    // on where each card's own dot happened to sit.
+    const midY = lowerBound != null && upperBound != null
+      ? (lowerBound + upperBound) / 2
+      : p0.y + dy / 2
     const sign = dx > 0 ? 1 : -1
     const r = Math.min(R, Math.abs(dx) / 2, Math.abs(midY - p0.y), Math.abs(p1.y - midY))
     return [
@@ -338,13 +281,6 @@ function useScrollActiveIndex(boxRefs, count) {
     const update = () => {
       raf = null
 
-      const doc = document.documentElement
-      const atBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - 2
-      if (atBottom) {
-        setActiveIndex(count - 1)
-        return
-      }
-
       const refLine = window.innerHeight * 0.35
       let closest = 0
       let closestDist = Infinity
@@ -380,7 +316,6 @@ function useScrollActiveIndex(boxRefs, count) {
 
 export default function TraceabilityPage() {
   const navigate = useNavigate()
-  const now = useLiveClock()
 
   const containerRef = useRef(null)
   const anchorRefs = useRef([])
@@ -451,7 +386,6 @@ export default function TraceabilityPage() {
               index={i}
               side={i % 2 === 0 ? 'left' : 'right'}
               isActive={activeIndex === i}
-              now={now}
               dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
               boxRef={(el) => { boxRefs.current[i] = el }}
             />
