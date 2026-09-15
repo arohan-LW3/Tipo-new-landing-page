@@ -156,7 +156,7 @@ function SourceCard({ tile, isActive, boxRef }) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '0.7px solid #ffffff', padding: '10px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '0.7px solid rgba(255,255,255,0.35)', padding: '10px 14px' }}>
           <span style={{ color: '#ffffff', fontSize: '0.58rem' }}>{tile.footer.label}</span>
           <span style={{ color: GOLD, fontSize: '0.58rem' }}>{tile.footer.value}</span>
         </div>
