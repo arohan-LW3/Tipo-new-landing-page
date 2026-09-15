@@ -1,103 +1,196 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
+// Each tile's body is a stack of rows. A row with an empty label renders as a
+// bare right-aligned value (used for a coordinate line directly under a
+// place-name row). `emphasis` rows render their value large and gold, like a
+// place name; plain rows render small and white. `footer` is always the
+// date/duration field and always sits in the separate footer strip.
 const TILES = [
   {
     title: 'Collection of Herbs',
-    details: [
-      { label: 'GEO LOCATION', value: '27.764256°N, 94.992861°E' },
-      { label: 'DATE', value: '09 Oct 2025' },
+    rows: [
+      { label: 'Sourced from', value: 'Telam Bédum, Dhemaji', emphasis: true },
+      { label: '', value: '27.76°N, 94.99°E' },
     ],
+    footer: { label: 'Collected on', value: '09 Oct 2025' },
   },
   {
     title: 'EPOB Preparation',
-    details: [
-      { label: 'GEO LOCATION 1', value: '27.567237°N, 94.742544°E' },
-      { label: 'GEO LOCATION 2', value: '27.761967°N, 95.064634°E' },
-      { label: 'DATE', value: '10 Oct 2025' },
+    rows: [
+      { label: 'Sourced from', value: 'Memberchuk, Dhemaji', emphasis: true },
+      { label: '', value: '27.57°N, 94.74°E' },
+      { label: '', value: 'Majulipur, Dhemaji', emphasis: true },
+      { label: '', value: '27.76°N, 95.06°E' },
     ],
+    footer: { label: 'Collected on', value: '10 Oct 2025' },
   },
   {
     title: 'Preparation of Fermentation',
-    details: [
-      { label: 'GEO LOCATION 1', value: '27.567237°N, 94.742544°E' },
-      { label: 'DATE', value: '02 Nov 2025' },
-      { label: 'PREPARED BY', value: 'Ardha SHG & Polo SHG' },
+    rows: [
+      { label: 'Prepared at', value: 'Memberchuk, Dhemaji', emphasis: true },
+      { label: '', value: '27.57°N, 94.74°E' },
+      { label: 'Prepared by', value: 'Ardha SHG & Polo SHG', emphasis: true },
     ],
+    footer: { label: 'Prepared on', value: '02 Nov 2025' },
   },
   {
     title: 'Transportation',
-    details: [
-      { label: 'FROM', value: 'Laimekuri (27.761967°N, 95.064634°E)' },
-      { label: 'TO', value: 'Guwahati Biotech Park (26.194452°N, 91.671489°E)' },
-      { label: 'DURATION', value: '10 Hours' },
+    rows: [
+      { label: 'From', value: 'Laimekuri', emphasis: true },
+      { label: '', value: '27.76°N, 95.06°E' },
+      { label: 'To', value: 'Guwahati Biotech Park', emphasis: true },
+      { label: '', value: '26.19°N, 91.67°E' },
     ],
+    footer: { label: 'Duration', value: '10 Hours' },
   },
   {
     title: 'Fermentation-Storage Facility',
-    details: [
-      { label: 'GEO LOCATION', value: '26.17°N, 91.71°E' },
-      { label: 'DURATION', value: '23 Days' },
-      { label: 'STORAGE FACILITY', value: 'Guwahati Biotech Park' },
+    rows: [
+      { label: 'Stored at', value: 'Amingaon, Guwahati', emphasis: true },
+      { label: '', value: '26.17°N, 91.71°E' },
+      { label: 'Storage facility', value: 'Guwahati Biotech Park', emphasis: true },
     ],
+    footer: { label: 'Duration', value: '23 Days' },
   },
   {
     title: 'Extraction & Stabilisation',
-    details: [
-      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'START DATE', value: '25 Nov 2025' },
-      { label: 'END DATE', value: '26 Feb 2026' },
-      { label: 'DURATION', value: '3 Months' },
-      { label: 'FACILITY', value: 'Guwahati Biotech Park' },
+    rows: [
+      { label: 'Extracted at', value: 'Sonaighuli, Dispur', emphasis: true },
+      { label: '', value: '26.14°N, 91.74°E' },
+      { label: 'Facility', value: 'Guwahati Biotech Park', emphasis: true },
     ],
+    footer: { label: 'Duration', value: '3 Months' },
   },
   {
     title: 'Bottling',
-    details: [
-      { label: 'GEO LOCATION', value: '26.1445°N, 91.7362°E' },
-      { label: 'DATE', value: '07 Mar 2026' },
-      { label: 'FACILITY', value: 'Guwahati Biotech Park' },
+    rows: [
+      { label: 'Bottled at', value: 'Sonaighuli, Dispur', emphasis: true },
+      { label: '', value: '26.14°N, 91.74°E' },
+      { label: 'Facility', value: 'Guwahati Biotech Park', emphasis: true },
     ],
+    footer: { label: 'Bottled on', value: '07 Mar 2026' },
   },
 ]
 
 const GOLD = '#F7A70C'
 const MUTED_LINE = 'rgba(255,255,255,0.22)'
-const MUTED_DOT = 'rgba(255,255,255,0.35)'
+const MUTED_DOT = '#ffffff'
 const DOT_R = 8
 const PATH_UNITS = 1000
-const CARD_WIDTH = '88%'
 
-function DetailRows({ details }) {
+function SunMoonIcon({ width = '24px', height = '25px' }) {
   return (
-    <div>
-      {details.map(({ label, value }, idx) => (
-        <div key={idx} style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '10px',
-        }}>
-          <span style={{
-            color: 'rgba(255,255,255,0.45)',
-            fontSize: '0.65rem',
-            letterSpacing: '0.07em',
-            textTransform: 'uppercase',
-            flexShrink: 0,
-            marginRight: '12px',
-          }}>
-            {label}
-          </span>
-          <span style={{
-            color: '#ffffff',
-            fontSize: '0.72rem',
-            textAlign: 'right',
-            letterSpacing: '0.01em',
-          }}>
-            {value}
+    <div style={{ position: 'relative', width, height, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: '28.44% 37.46% 37.54% 27.46%' }}>
+        <img src="/assets/icons/sun-moon-layer0.svg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+      </div>
+      <div style={{ position: 'absolute', inset: '0.03% 44.22% 39.58% 0' }}>
+        <img src="/assets/icons/sun-moon-layer1.svg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+      </div>
+      <div style={{ position: 'absolute', inset: '5.22% 0.03% 0.03% 4.96%' }}>
+        <img src="/assets/icons/sun-moon-layer2.svg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+      </div>
+      <div style={{ position: 'absolute', inset: '28.71% 27.27% 28.59% 29.09%' }}>
+        <img src="/assets/icons/sun-moon-layer3.svg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+      </div>
+    </div>
+  )
+}
+
+function CardRow({ row, small, largeSize, smallSize, isLast }) {
+  const valueStyle = row.emphasis
+    ? { color: GOLD, fontSize: largeSize, textAlign: 'right', lineHeight: '1.3' }
+    : { color: '#ffffff', fontSize: smallSize, textAlign: 'right' }
+
+  const rowPad = small ? '0 14px' : '0 18px'
+  const rowMarginBottom = isLast ? 0 : (small ? '6px' : '8px')
+
+  if (!row.label) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: rowPad, marginBottom: rowMarginBottom }}>
+        <span style={valueStyle}>{row.value}</span>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      padding: rowPad,
+      marginBottom: rowMarginBottom,
+      gap: small ? '8px' : '12px',
+    }}>
+      <span style={{ color: '#ffffff', fontSize: smallSize, flexShrink: 0 }}>{row.label}</span>
+      <span style={valueStyle}>{row.value}</span>
+    </div>
+  )
+}
+
+function SourceCard({ tile, isActive, boxRef }) {
+  return (
+    <div ref={boxRef} style={{ position: 'relative' }}>
+      {/* Mobile layout: dark header bar, black body, white-divider footer */}
+      <div
+        className="md:hidden"
+        style={{
+          backgroundColor: '#000000',
+          border: `0.5px solid ${isActive ? 'rgba(247,167,12,0.75)' : 'rgba(255,255,255,0.35)'}`,
+          borderRadius: '14px',
+          overflow: 'hidden',
+          transition: 'border-color 0.3s ease',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#222020', padding: '10px 14px' }}>
+          <SunMoonIcon width="18px" height="19px" />
+          <span style={{ color: GOLD, fontSize: '0.89rem', letterSpacing: '0.02em' }}>
+            {tile.title}
           </span>
         </div>
-      ))}
+
+        <div style={{ padding: '10px 0' }}>
+          {tile.rows.map((row, i) => (
+            <CardRow key={i} row={row} small largeSize="0.71rem" smallSize="0.58rem" isLast={i === tile.rows.length - 1} />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '0.7px solid #ffffff', padding: '10px 14px' }}>
+          <span style={{ color: '#ffffff', fontSize: '0.58rem' }}>{tile.footer.label}</span>
+          <span style={{ color: GOLD, fontSize: '0.58rem' }}>{tile.footer.value}</span>
+        </div>
+      </div>
+
+      {/* Desktop layout: bordered card, plain header, dark footer strip */}
+      <div
+        className="hidden md:flex md:flex-col md:justify-between md:h-[196px]"
+        style={{
+          backgroundColor: '#000000',
+          border: `1px solid ${isActive ? '#F7A70C' : 'rgba(247,167,12,0.4)'}`,
+          borderRadius: '20px',
+          overflow: 'hidden',
+          transition: 'border-color 0.3s ease',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px 18px 8px' }}>
+          <SunMoonIcon />
+          <span style={{ color: GOLD, fontSize: '1rem', letterSpacing: '0.02em' }}>
+            {tile.title}
+          </span>
+        </div>
+
+        <div style={{ flex: 1, padding: '8px 0' }}>
+          {tile.rows.map((row, i) => (
+            <CardRow key={i} row={row} largeSize="1.0rem" smallSize="0.8rem" isLast={i === tile.rows.length - 1} />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#222020', padding: '12px 18px' }}>
+          <span style={{ color: '#ffffff', fontSize: '0.8rem' }}>{tile.footer.label}</span>
+          <span style={{ color: GOLD, fontSize: '0.8rem' }}>{tile.footer.value}</span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -112,7 +205,7 @@ function Tile({ tile, index, isActive, side, dotAnchorRef, boxRef }) {
         marginBottom: index < TILES.length - 1 ? '54px' : '0',
       }}
     >
-      <div style={{ width: CARD_WIDTH, position: 'relative' }}>
+      <div className="w-[88%] md:w-[401.59px]" style={{ position: 'relative' }}>
         {/* connector anchor dot: always floats out in the empty gutter beside the card, never touching its border */}
         <div
           ref={dotAnchorRef}
@@ -125,28 +218,7 @@ function Tile({ tile, index, isActive, side, dotAnchorRef, boxRef }) {
           }}
         />
 
-        <div
-          ref={boxRef}
-          style={{
-            backgroundColor: '#0a0a0a',
-            border: `0.5px solid ${isActive ? 'rgba(247,167,12,0.75)' : 'rgba(255,255,255,0.35)'}`,
-            borderRadius: '4px',
-            overflow: 'hidden',
-            position: 'relative',
-            transition: 'border-color 0.3s ease',
-          }}
-        >
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px 0' }}>
-            <span style={{ color: GOLD, fontSize: '1.0rem', letterSpacing: '0.03em' }}>
-              {tile.title}
-            </span>
-          </div>
-
-          <div style={{ padding: '20px 20px 0' }}>
-            <DetailRows details={tile.details} />
-          </div>
-        </div>
+        <SourceCard tile={tile} isActive={isActive} boxRef={boxRef} />
       </div>
     </div>
   )
@@ -281,7 +353,7 @@ function useScrollActiveIndex(boxRefs, count) {
     const update = () => {
       raf = null
 
-      const refLine = window.innerHeight * 0.35
+      const refLine = window.innerHeight * 0.25
       let closest = 0
       let closestDist = Infinity
       for (let i = 0; i < count; i++) {
@@ -316,6 +388,8 @@ function useScrollActiveIndex(boxRefs, count) {
 
 export default function TraceabilityPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { batch, serial } = location.state || {}
 
   const containerRef = useRef(null)
   const anchorRefs = useRef([])
@@ -348,20 +422,13 @@ export default function TraceabilityPage() {
   }, [])
 
   return (
-    <div
-      className="min-h-dvh flex flex-col items-center"
-      style={{
-        backgroundColor: '#000000',
-        paddingLeft: '40px',
-        paddingRight: '40px',
-        paddingTop: 'max(56px, env(safe-area-inset-top, 56px))',
-        paddingBottom: '24px',
-      }}
-    >
-      <div className="w-full max-w-[420px] flex flex-col">
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
+    <div className="min-h-dvh flex flex-col items-center" style={{ backgroundColor: '#000000' }}>
+      {/* Sticky header */}
+      <div
+        className="sticky top-0 z-10 flex items-center justify-center bg-black/95 backdrop-blur-sm px-10 shrink-0 w-full"
+        style={{ height: '56px', paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <div className="w-full max-w-[420px] flex items-center">
           <button
             onClick={() => navigate(-1)}
             style={{
@@ -372,27 +439,74 @@ export default function TraceabilityPage() {
           >
             <img src="/assets/arrow-back.svg" alt="Back" style={{ width: '24px', height: '24px' }} />
           </button>
-          <span style={{ color: '#fff', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-            Traceability
-          </span>
+          {batch ? (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span
+                style={{
+                  color: '#fff',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.03em',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                }}
+              >
+                Batch No. {batch}
+              </span>
+              {serial && (
+                <span
+                  style={{
+                    color: '#fff',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.03em',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '4px',
+                    padding: '4px 10px',
+                  }}
+                >
+                  Serial No. {serial}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span style={{ color: '#fff', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
+              Traceability
+            </span>
+          )}
         </div>
+      </div>
 
-        {/* Tiles + connector */}
-        <div ref={containerRef} style={{ position: 'relative' }}>
-          {TILES.map((tile, i) => (
-            <Tile
-              key={i}
-              tile={tile}
-              index={i}
-              side={i % 2 === 0 ? 'left' : 'right'}
-              isActive={activeIndex === i}
-              dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
-              boxRef={(el) => { boxRefs.current[i] = el }}
-            />
-          ))}
-          <Connector points={points} boxes={boxes} activeIndex={activeIndex} containerSize={containerSize} />
+      <div
+        className="w-full flex flex-col items-center px-10"
+        style={{
+          paddingTop: '32px',
+          // Generous bottom spacer: the scroll-driven active-card detection
+          // needs enough room below the last card for its center to actually
+          // reach the reference line the scroll logic looks for — without it,
+          // the last couple of cards can never be picked no matter how far
+          // you scroll, since there's simply no more room to scroll into.
+          paddingBottom: 'max(24px, 60vh)',
+        }}
+      >
+        <div className="w-full max-w-[420px] flex flex-col">
+
+          {/* Tiles + connector */}
+          <div ref={containerRef} style={{ position: 'relative' }}>
+            {TILES.map((tile, i) => (
+              <Tile
+                key={i}
+                tile={tile}
+                index={i}
+                side={i % 2 === 0 ? 'left' : 'right'}
+                isActive={activeIndex === i}
+                dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
+                boxRef={(el) => { boxRefs.current[i] = el }}
+              />
+            ))}
+            <Connector points={points} boxes={boxes} activeIndex={activeIndex} containerSize={containerSize} />
+          </div>
+
         </div>
-
       </div>
     </div>
   )

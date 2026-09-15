@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import FermentationModal from './FermentationModal'
+import TraceabilityGatePage from './TraceabilityGatePage'
 import TraceabilityPage from './TraceabilityPage'
 import ContactPage from './ContactPage'
 
@@ -80,6 +81,13 @@ function HomePage() {
             className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
             Website
           </a>
+          <button
+            onClick={() => navigate('/trace')}
+            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
+          >
+            Traceability
+          </button>
           <a href="https://www.youtube.com/@TipoHeritage" target="_blank" rel="noopener"
             style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
             className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent flex items-center justify-center no-underline">
@@ -91,13 +99,6 @@ function HomePage() {
             className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
           >
             Our Fermentation Process
-          </button>
-          <button
-            onClick={() => navigate('/traceability')}
-            style={{width: '100%', borderColor: '#F7A70C', color: '#F7A70C'}}
-            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
-          >
-            Traceability
           </button>
           <button
             onClick={() => navigate('/contact')}
@@ -125,6 +126,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/trace" element={<TraceabilityGatePage />} />
       <Route path="/traceability" element={<TraceabilityPage />} />
       <Route path="/contact" element={<ContactPage />} />
     </Routes>
