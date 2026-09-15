@@ -42,3 +42,11 @@ html, body, #root {
     transform: scale(1.03);
   }
 }
+
+/* Placed after the hover rule so the press-down effect always wins over the
+   hover scale-up when both are true at once (a mouse click is hover+active
+   simultaneously). */
+.tipo-btn:active {
+  transform: scale(0.97);
+  transition: color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
