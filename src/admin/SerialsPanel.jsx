@@ -257,14 +257,14 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
       )}
     >
       <p style={{ color: 'var(--a-muted)' }}>From: {review.source}</p>
-      <div className="grid grid-cols-2 gap-2">
-        <Stat value={review.serials.length} label="found" />
-        <Stat
-          value={effective}
-          label={isAdd ? `new for Batch ${batchId}` : `registered, will be removed`}
-          gold
-        />
-      </div>
+      {/* A sentence rather than big numbers, so a count like "1" isn't
+          mistaken for a serial number. */}
+      <p className="text-[0.92rem]">
+        Found <strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{plural(review.serials.length, 'serial number')}</strong>.{' '}
+        {isAdd
+          ? <><strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{effective.toLocaleString()}</strong> will be added to Batch {batchId}.</>
+          : <><strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{effective.toLocaleString()}</strong> will be removed from Batch {batchId}.</>}
+      </p>
       {isAdd && known > 0 && <Notice tone="info">{known.toLocaleString()} already registered - they'll be skipped.</Notice>}
       {!isAdd && review.serials.length - known > 0 && (
         <Notice tone="info">{(review.serials.length - known).toLocaleString()} aren't registered in this batch - nothing to remove for those.</Notice>
@@ -275,7 +275,7 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
         </Notice>
       )}
       <div>
-        <span className="admin-label">{review.serials.length > SAMPLE ? `First ${SAMPLE}` : 'All'}</span>
+        <span className="admin-label">{review.serials.length > SAMPLE ? `First ${SAMPLE} serial numbers` : 'Serial numbers'}</span>
         <div className="flex flex-wrap gap-1.5" style={{ marginTop: '8px', maxHeight: '160px', overflowY: 'auto' }}>
           {review.serials.slice(0, SAMPLE).map((s) => (
             <span
@@ -297,11 +297,6 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
   )
 }
 
-function Stat({ value, label, gold }) {
-  return (
-    <div style={{ border: '1px solid var(--a-border)', borderRadius: '8px', padding: '10px 12px', background: gold ? 'var(--a-gold-soft)' : 'var(--a-surface)' }}>
-      <p className="text-[1.3rem]" style={{ color: gold ? 'var(--a-gold-text)' : 'var(--a-text)' }}>{value.toLocaleString()}</p>
-      <p className="text-[0.72rem]" style={{ color: 'var(--a-muted)' }}>{label}</p>
-    </div>
-  )
+function plural(n, word) {
+  return `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`
 }
