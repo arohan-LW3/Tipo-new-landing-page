@@ -287,7 +287,6 @@ export default function BatchEditorPage() {
               index={i}
               count={draft.tiles.length}
               onChange={(fn) => update((d) => fn(d.tiles[i]))}
-              onMove={(dir) => update((d) => { const [t] = d.tiles.splice(i, 1); d.tiles.splice(i + dir, 0, t) })}
               onDuplicate={() => update((d) => { d.tiles.splice(i + 1, 0, clone(d.tiles[i])) })}
               onRemove={() => update((d) => { d.tiles.splice(i, 1) })}
             />
@@ -433,7 +432,7 @@ function IconButton({ label, icon, onClick, disabled, danger }) {
   )
 }
 
-function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemove }) {
+function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
   const siteTile = useMemo(() => toSiteTile(tile), [tile])
   const setEntry = (j, fn) => onChange((t) => fn(t.entries[j]))
@@ -441,8 +440,6 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
 
   const cardActions = (
     <>
-      <IconButton label="Move card up" icon="arrowUpward" disabled={index === 0} onClick={() => onMove(-1)} />
-      <IconButton label="Move card down" icon="arrowDownward" disabled={index === count - 1} onClick={() => onMove(1)} />
       <IconButton label="Duplicate card" icon="contentCopy" onClick={onDuplicate} />
       <IconButton label="Remove card" icon="delete" danger disabled={count === 1} onClick={() => setConfirmRemove(true)} />
     </>
@@ -478,8 +475,11 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
             <div className="flex items-center justify-between gap-2">
               <span className="admin-label">Entry {j + 1}</span>
               <div className="flex gap-1">
-                <IconButton label="Move entry up" icon="arrowUpward" disabled={j === 0} onClick={() => moveEntry(j, -1)} />
-                <IconButton label="Move entry down" icon="arrowDownward" disabled={j === tile.entries.length - 1} onClick={() => moveEntry(j, 1)} />
+                {/* One arrow is enough to reorder: the first entry can move
+                    down, every other entry can move up. */}
+                {tile.entries.length > 1 && (j === 0
+                  ? <IconButton label="Move entry down" icon="arrowDownward" onClick={() => moveEntry(j, 1)} />
+                  : <IconButton label="Move entry up" icon="arrowUpward" onClick={() => moveEntry(j, -1)} />)}
                 <IconButton label="Remove entry" icon="delete" danger onClick={() => onChange((t) => { t.entries.splice(j, 1) })} />
               </div>
             </div>
