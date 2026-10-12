@@ -16,7 +16,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
   const [review, setReview] = useState(null)    // { action: 'add'|'remove', serials, skipped, source }
   const [busy, setBusy] = useState(false)
   const [reading, setReading] = useState(false)
-  const [removeText, setRemoveText] = useState('')
+  const [removeList, setRemoveList] = useState([''])  // one serial per box
   const [confirmRemoveAll, setConfirmRemoveAll] = useState(false)
   const fileInput = useRef(null)
   const [downloaded, flagDownloaded] = useFlag()
@@ -71,7 +71,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
         const r = await adminApi.removeSerials(batch.id, review.serials)
         setMessage(`Removed ${r.removed.toLocaleString()} serial number${r.removed === 1 ? '' : 's'}.${r.notFound ? ` ${r.notFound.toLocaleString()} weren't registered.` : ''}`)
         onBatchChange(r.batch)
-        setRemoveText('')
+        setRemoveList([''])
       }
       setReview(null)
       setSerials((await adminApi.serials(batch.id)).serials)
@@ -195,11 +195,50 @@ export default function SerialsPanel({ batch, onBatchChange }) {
         <details className="admin-panel" style={{ padding: '18px' }}>
           <summary className="cursor-pointer text-[0.95rem]">Remove serial numbers</summary>
           <div className="flex flex-col gap-4" style={{ marginTop: '14px' }}>
-            <Field hint="Same format as adding: one per line, commas, or ranges like 1-50.">
-              <textarea className="admin-input" rows={4} value={removeText} onChange={(e) => setRemoveText(e.target.value)} />
-            </Field>
+            <div className="flex flex-col gap-2">
+              <span className="admin-label">Serial numbers to remove</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {removeList.map((value, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <input
+                      className="admin-input"
+                      aria-label={`Serial number ${i + 1} to remove`}
+                      placeholder="e.g. 1002"
+                      value={value}
+                      maxLength={40}
+                      autoFocus={i > 0 && i === removeList.length - 1 && !value}
+                      onChange={(e) => setRemoveList((l) => l.map((v, j) => (j === i ? e.target.value : v)))}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setRemoveList((l) => [...l, '']) } }}
+                      style={{ width: '150px' }}
+                    />
+                    {removeList.length > 1 && (
+                      <button
+                        type="button"
+                        aria-label="Remove this box"
+                        title="Remove this box"
+                        onClick={() => setRemoveList((l) => l.filter((_, j) => j !== i))}
+                        className="flex items-center justify-center bg-transparent cursor-pointer"
+                        style={{ width: '34px', height: '34px', borderRadius: '4px', border: '1px solid var(--a-border)', color: 'var(--a-muted)' }}
+                      >
+                        <Icon name="delete" size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  aria-label="Add another serial number"
+                  title="Add another serial number"
+                  onClick={() => setRemoveList((l) => [...l, ''])}
+                  className="admin-btn quiet"
+                  style={{ width: '46px', padding: 0 }}
+                >
+                  <Icon name="add" size={20} />
+                </button>
+              </div>
+            </div>
             <div className="flex flex-col md:flex-row gap-2">
-              <button type="button" className="admin-btn danger" disabled={!removeText.trim()} onClick={() => startReview('remove', parseSerialText(removeText), 'typed list')}>
+              <button type="button" className="admin-btn danger" disabled={!removeList.some((v) => v.trim())} onClick={() => startReview('remove', parseSerialText(removeList.join('\n')), 'typed list')}>
                 Review removal
               </button>
               <button type="button" className="admin-btn danger" onClick={() => setConfirmRemoveAll(true)}>Remove all serial numbers</button>
@@ -252,7 +291,7 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
         <>
           <button type="button" className="admin-btn quiet" disabled={busy} onClick={onCancel}>Cancel</button>
           <button type="button" className={`admin-btn ${isAdd ? 'primary' : 'danger'}`} disabled={busy || effective === 0} onClick={onConfirm}>
-            {busy ? 'Saving…' : isAdd ? `Confirm & add ${effective.toLocaleString()}` : `Confirm & remove ${effective.toLocaleString()}`}
+            {busy ? 'Saving…' : `${isAdd ? 'Confirm & add' : 'Confirm & remove'} ${effective === 1 ? changing[0] : `${effective.toLocaleString()} serials`}`}
           </button>
         </>
       )}
