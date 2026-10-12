@@ -258,7 +258,6 @@ export default function BatchEditorPage() {
               index={i}
               count={draft.tiles.length}
               onChange={(fn) => update((d) => fn(d.tiles[i]))}
-              onDuplicate={() => update((d) => { d.tiles.splice(i + 1, 0, clone(d.tiles[i])) })}
               onRemove={() => update((d) => { d.tiles.splice(i, 1) })}
             />
           ))}
@@ -403,7 +402,7 @@ function IconButton({ label, icon, onClick, disabled, danger }) {
   )
 }
 
-function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
+function CardEditor({ tile, index, count, onChange, onRemove }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
   const siteTile = useMemo(() => toSiteTile(tile), [tile])
   const setEntry = (j, fn) => onChange((t) => fn(t.entries[j]))
@@ -411,7 +410,6 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
 
   const cardActions = (
     <>
-      <IconButton label="Duplicate card" icon="contentCopy" onClick={onDuplicate} />
       <IconButton label="Remove card" icon="delete" danger disabled={count === 1} onClick={() => setConfirmRemove(true)} />
     </>
   )
