@@ -163,10 +163,7 @@ export default function BatchesPage() {
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = '' }}
               >
                 <div className="flex-1 min-w-0 flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)' }}>Batch {b.id}</span>
-                  <LiveBadge live={b.live} />
-                </div>
+                <span className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)' }}>Batch {b.id}</span>
                 <div className="flex gap-5 text-[0.8rem]">
                   <span><strong style={{ fontWeight: 'normal', fontSize: '1rem' }}>{b.tiles.length}</strong> <span style={{ color: 'var(--a-muted)' }}>cards</span></span>
                   <span><strong style={{ fontWeight: 'normal', fontSize: '1rem' }}>{b.serialCount.toLocaleString()}</strong> <span style={{ color: 'var(--a-muted)' }}>serial numbers</span></span>
@@ -175,8 +172,11 @@ export default function BatchesPage() {
                   {b.updatedAt ? `Last updated ${formatDate(b.updatedAt)}${b.updatedBy ? ` by ${b.updatedBy}` : ''}` : 'Not edited yet'}
                 </span>
                 </div>
-                {/* Centred on the whole card, not just the title row */}
-                <Icon name="arrowForwardIos" size={16} style={{ color: 'var(--a-muted)' }} />
+                {/* Badge and arrow sit together, centred on the whole card */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <LiveBadge live={b.live} />
+                  <Icon name="arrowForwardIos" size={16} style={{ color: 'var(--a-muted)' }} />
+                </div>
               </button>
             </li>
           ))}
