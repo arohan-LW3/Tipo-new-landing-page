@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { adminApi, downloadFile, formatDate } from './api'
 import { AdminPage, Dialog, Notice, Spinner, useLoggedOutRedirect, useFlag } from './ui'
 import Icon from './icons'
+import { EXPORT_FORMATS, buildExport, fileName } from './exporters'
 
 export default function BatchesPage() {
   const navigate = useNavigate()
@@ -13,6 +14,21 @@ export default function BatchesPage() {
   const [message, setMessage] = useState('')
   const [importState, setImportState] = useState(null)
   const [downloaded, flagDownloaded] = useFlag()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [exporting, setExporting] = useState(null)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const close = (e) => { if (!menuRef.current?.contains(e.target)) setMenuOpen(false) }
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('mousedown', close)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
   const fileInput = useRef(null)
 
   const load = useCallback(() => {
@@ -33,15 +49,22 @@ export default function BatchesPage() {
     navigate('/admin/login', { replace: true })
   }
 
-  async function exportAll() {
+  async function exportAll(format) {
+    setMenuOpen(false)
     setError('')
+    setExporting(format.key)
     try {
       const body = await adminApi.exportData()
-      downloadFile(`tipo-traceability-${body.exportedAt.slice(0, 10)}.json`, JSON.stringify(body, null, 2), 'application/json')
+      const file = await buildExport(body, format.key)
+      downloadFile(fileName(body, format.ext), file, file.type)
       flagDownloaded()
-      setMessage('Downloaded a copy of all batches and serial numbers. Keep this file safe - it can be uploaded again on any Tipo admin.')
+      setMessage(format.key === 'csv' || format.key === 'pdf'
+        ? `Downloaded all data as ${format.label}. To upload data back later, use the JSON (or ZIP) download.`
+        : `Downloaded all data as ${format.label}. Keep this file safe - it can be uploaded again on any Tipo admin.`)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || "Couldn't create the download. Please try again.")
+    } finally {
+      setExporting(null)
     }
   }
 
@@ -52,9 +75,9 @@ export default function BatchesPage() {
     setError('')
     let parsed
     try {
-      parsed = JSON.parse(await file.text())
+      parsed = JSON.parse(await readDataFile(file))
     } catch {
-      setError(`${file.name} isn't a Tipo data file. Use the .json file from "Download all data".`)
+      setError(`${file.name} isn't a Tipo data file. Use the JSON or ZIP file from "Download all data".`)
       return
     }
     setImportState({ file: parsed, name: file.name, mode: 'replace', summary: null, busy: true })
@@ -160,14 +183,47 @@ export default function BatchesPage() {
           Download a file with every batch, card and serial number. Upload that file on another Tipo admin (for example after moving to a new server) to bring everything across.
         </p>
         <div className="flex flex-col md:flex-row gap-2" style={{ marginTop: '14px' }}>
-          <button type="button" className="admin-btn" onClick={exportAll}>
-            <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
-            {downloaded ? 'Downloaded' : 'Download all data'}
-          </button>
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="admin-btn w-full"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              disabled={Boolean(exporting)}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
+              {exporting ? 'Preparing…' : downloaded ? 'Downloaded' : 'Download all data'}
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="admin-panel flex flex-col"
+                style={{ position: 'absolute', left: 0, bottom: 'calc(100% + 6px)', zIndex: 20, width: 'min(340px, calc(100vw - 40px))', padding: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
+              >
+                {EXPORT_FORMATS.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => exportAll(f)}
+                    className="flex items-start gap-3 text-left bg-transparent border-none cursor-pointer hover:bg-[var(--a-gold-soft)]"
+                    style={{ padding: '10px', borderRadius: '8px', fontFamily: 'inherit', color: 'var(--a-text)' }}
+                  >
+                    <Icon name="download" size={18} style={{ color: 'var(--a-gold-text)', marginTop: '1px' }} />
+                    <span>
+                      <span className="block text-[0.88rem]">{f.label} <span style={{ color: 'var(--a-muted)' }}>.{f.ext}</span></span>
+                      <span className="block text-[0.74rem]" style={{ color: 'var(--a-muted)', lineHeight: 1.45 }}>{f.text}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button type="button" className="admin-btn quiet" onClick={() => fileInput.current?.click()}>
             <Icon name="upload" size={18} /> Upload data
           </button>
-          <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={pickImportFile} />
+          <input ref={fileInput} type="file" accept=".json,.zip,application/json,application/zip" hidden onChange={pickImportFile} />
         </div>
       </section>
 
@@ -204,6 +260,16 @@ export default function BatchesPage() {
       )}
     </AdminPage>
   )
+}
+
+// Upload accepts the JSON backup, or the ZIP download (which contains it).
+async function readDataFile(file) {
+  if (!file.name.toLowerCase().endsWith('.zip')) return file.text()
+  const { unzipSync, strFromU8 } = await import('fflate')
+  const files = unzipSync(new Uint8Array(await file.arrayBuffer()))
+  const json = Object.keys(files).find((name) => name.toLowerCase().endsWith('.json'))
+  if (!json) throw new Error('No data file in the ZIP')
+  return strFromU8(files[json])
 }
 
 export function LiveBadge({ live }) {
