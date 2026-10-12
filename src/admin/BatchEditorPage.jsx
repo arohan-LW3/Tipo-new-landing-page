@@ -46,7 +46,7 @@ function toEditorTile(tile) {
   return { title: tile.title, entries: rowsToEntries(tile.rows), footer: { ...tile.footer } }
 }
 
-export function toSiteTile(tile) {
+function toSiteTile(tile) {
   return {
     title: tile.title.trim(),
     rows: entriesToRows(tile.entries),
