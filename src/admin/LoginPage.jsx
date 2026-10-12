@@ -41,7 +41,8 @@ export default function LoginPage() {
   return (
     <AdminPage title="Admin login" onBack={() => navigate('/trace')}>
       <div className="flex flex-col items-center text-center" style={{ marginBottom: '28px' }}>
-        <img src="/assets/tipo-logo-t.svg" alt="" className="h-20 w-auto" style={{ marginBottom: '4px' }} />
+        {/* Full logo; the white part of the dark-site logo is dark here */}
+        <img src="/assets/tipo-logo-light.svg" alt="Tipo" className="w-[160px] h-auto" style={{ marginBottom: '22px' }} />
         <h1 className="text-[1.25rem]" style={{ color: 'var(--a-gold-text)', fontWeight: 'normal' }}>Traceability admin</h1>
         <p className="text-[0.82rem]" style={{ color: 'var(--a-muted)', marginTop: '6px' }}>
           Update batch details and serial numbers.
