@@ -3,19 +3,40 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-[4px] px-4 py-3.5 text-[0.95rem] text-white placeholder:text-white/30 outline-none focus:border-[#F7A70C] transition-colors"
 
-const VALID_BATCH = '1'
-const BATCH_OPTIONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+function sameBatch(a, b) {
+  return a.trim().toLowerCase() === b.trim().toLowerCase()
+}
+
+function liveListText(ids) {
+  if (ids.length === 0) return 'No batch is available yet.'
+  if (ids.length === 1) return `only Batch ${ids[0]} is currently available.`
+  return `available batches: ${ids.join(', ')}.`
+}
 
 export default function TraceabilityGatePage() {
   const navigate = useNavigate()
   // Pre-filled when arriving from the Batch/Serial chips on the traceability page
-  const { state } = useLocation()
-  const [batch, setBatch] = useState(state?.batch ?? '')
-  const [serial, setSerial] = useState(state?.serial ?? '')
+  const location = useLocation()
+  const [batch, setBatch] = useState(location.state?.batch ?? '')
+  const [serial, setSerial] = useState(location.state?.serial ?? '')
   const [batchDropdownOpen, setBatchDropdownOpen] = useState(false)
   const batchFieldRef = useRef(null)
+  // Batches come from the admin-managed data: live ones can be picked, the
+  // rest show as "not yet available".
+  const [batches, setBatches] = useState(null)
+  const [serialError, setSerialError] = useState('')
+  const [checking, setChecking] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
-  const batchInvalid = batch.trim() !== '' && batch.trim() !== VALID_BATCH
+  useEffect(() => {
+    fetch('/api/trace')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((body) => setBatches(body.batches))
+      .catch(() => setBatches([]))
+  }, [])
+
+  const liveIds = (batches || []).filter((b) => b.live).map((b) => b.id)
+  const batchInvalid = batches !== null && batch.trim() !== '' && !liveIds.some((id) => sameBatch(id, batch))
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -27,11 +48,43 @@ export default function TraceabilityGatePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  async function trace(batchValue, serialValue) {
+    setSerialError('')
+    setLoadError('')
+    setChecking(true)
+    try {
+      const query = new URLSearchParams({ batch: batchValue.trim(), serial: serialValue.trim() })
+      const res = await fetch(`/api/trace?${query}`)
+      const body = await res.json().catch(() => ({}))
+      if (res.ok) {
+        const params = new URLSearchParams({ batch: body.batch })
+        if (body.serial) params.set('serial', body.serial)
+        navigate(`/traceability?${params}`, { state: { batch: body.batch, serial: body.serial, tiles: body.tiles } })
+        return
+      }
+      if (body.error === 'serial-missing') setSerialError('Please enter the serial number printed on your bottle.')
+      else if (body.error === 'serial') setSerialError(`We couldn't find serial number ${serialValue.trim()} in Batch ${batchValue.trim()}. Please check the number on your bottle.`)
+      else if (body.error !== 'batch') setLoadError('Something went wrong. Please try again.')
+    } catch {
+      setLoadError('Could not connect. Please check your internet and try again.')
+    } finally {
+      setChecking(false)
+    }
+  }
+
   function handleTrace(e) {
     e.preventDefault()
-    if (batch.trim() !== VALID_BATCH) return
-    navigate('/traceability', { state: { batch: batch.trim(), serial: serial.trim() } })
+    if (!batch.trim() || batchInvalid || checking) return
+    trace(batch, serial)
   }
+
+  // Sent back here from the timeline page (hidden batch or unknown serial):
+  // check again so the right message shows next to the fields.
+  const recheck = location.state?.recheck
+  useEffect(() => {
+    if (recheck && location.state?.batch) trace(location.state.batch, location.state.serial || '')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recheck])
 
   return (
     <div className="min-h-dvh bg-[#0a0a0a] flex flex-col">
@@ -87,8 +140,10 @@ export default function TraceabilityGatePage() {
                       zIndex: 20,
                     }}
                   >
-                    {BATCH_OPTIONS.map((option) => {
-                      const available = option === VALID_BATCH
+                    {batches === null && (
+                      <p style={{ padding: '10px 16px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)' }}>Loading…</p>
+                    )}
+                    {(batches || []).map(({ id: option, live: available }) => {
                       return (
                         <button
                           key={option}
@@ -116,7 +171,7 @@ export default function TraceabilityGatePage() {
               </div>
               {batchInvalid && (
                 <p className="text-[#F7A70C] text-[0.7rem]">
-                  Batch {batch.trim()} hasn't started production yet - only Batch 1 is currently available.
+                  Batch {batch.trim()} hasn't started production yet - {liveListText(liveIds)}
                 </p>
               )}
             </div>
@@ -126,17 +181,21 @@ export default function TraceabilityGatePage() {
               <input
                 inputMode="numeric"
                 value={serial}
-                onChange={(e) => setSerial(e.target.value)}
+                onChange={(e) => { setSerial(e.target.value); setSerialError('') }}
                 className={inputClass}
               />
+              {serialError && <p className="text-[#F7A70C] text-[0.7rem]">{serialError}</p>}
             </div>
+
+            {loadError && <p className="text-[#F7A70C] text-[0.7rem]">{loadError}</p>}
 
             <button
               type="submit"
               style={{ width: '100%', borderColor: '#F7A70C', color: '#F7A70C' }}
               className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer mt-2"
+              disabled={checking}
             >
-              Trace
+              {checking ? 'Checking…' : 'Trace'}
             </button>
             <button
               type="button"
@@ -147,6 +206,16 @@ export default function TraceabilityGatePage() {
               Cancel
             </button>
           </form>
+
+          {/* Kept low-key: this page is mainly for customers */}
+          <button
+            type="button"
+            onClick={() => navigate('/admin/login')}
+            className="bg-transparent border-none cursor-pointer text-[0.7rem] tracking-[0.08em] uppercase text-white/35 hover:text-[#F7A70C] transition-colors"
+            style={{ marginTop: '28px', padding: '8px 12px', fontFamily: 'inherit' }}
+          >
+            Admin login
+          </button>
         </div>
       </div>
 

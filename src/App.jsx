@@ -1,10 +1,15 @@
-import { useRef, useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import FermentationModal from './FermentationModal'
 import TraceabilityGatePage from './TraceabilityGatePage'
 import TraceabilityPage from './TraceabilityPage'
 import ContactPage from './ContactPage'
+
+// Admin pages load only when opened, so customers never download them.
+const AdminLoginPage = lazy(() => import('./admin/LoginPage'))
+const AdminBatchesPage = lazy(() => import('./admin/BatchesPage'))
+const AdminBatchEditorPage = lazy(() => import('./admin/BatchEditorPage'))
 
 const INSTAGRAM_SVG = (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -129,6 +134,9 @@ export default function App() {
       <Route path="/trace" element={<TraceabilityGatePage />} />
       <Route path="/traceability" element={<TraceabilityPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/admin/login" element={<Suspense fallback={null}><AdminLoginPage /></Suspense>} />
+      <Route path="/admin" element={<Suspense fallback={null}><AdminBatchesPage /></Suspense>} />
+      <Route path="/admin/batch/:id" element={<Suspense fallback={null}><AdminBatchEditorPage /></Suspense>} />
     </Routes>
   )
 }

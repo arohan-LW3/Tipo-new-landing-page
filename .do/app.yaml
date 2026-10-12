@@ -1,0 +1,38 @@
+# DigitalOcean App Platform spec for the Tipo website.
+# Creates the website (built from the Dockerfile) and a Postgres database for
+# the traceability batches and serial numbers. See DEPLOY.md for the steps.
+name: tipo-website
+region: blr
+services:
+  - name: web
+    github:
+      repo: arohan-LW3/Tipo-new-landing-page
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: Dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    health_check:
+      http_path: /api/health
+    envs:
+      # Filled in automatically from the database below.
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db.DATABASE_URL}
+      - key: DATABASE_CA_CERT
+        scope: RUN_TIME
+        value: ${db.CA_CERT}
+      # Set these two in the DigitalOcean dashboard (they are secrets):
+      # ADMIN_USERS  e.g. owner@heritagetipo.com:a-strong-password;worker:another-password
+      # RESEND_API_KEY  the key used by the Contact Us form
+      - key: ADMIN_USERS
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+databases:
+  - name: db
+    engine: PG
+    production: false

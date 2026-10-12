@@ -1,77 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-
-// Each tile's body is a stack of rows. A row with an empty label renders as a
-// bare right-aligned value (used for a coordinate line directly under a
-// place-name row). `emphasis` rows render their value large and gold, like a
-// place name; plain rows render small and white. `footer` is always the
-// date/duration field and always sits in the separate footer strip.
-const TILES = [
-  {
-    title: 'Collection of Herbs',
-    rows: [
-      { label: 'Sourced from', value: 'Telam Bédum, Dhemaji', emphasis: true },
-      { label: '', value: '27.76°N, 94.99°E' },
-    ],
-    footer: { label: 'Collected on', value: '09 Oct 2025' },
-  },
-  {
-    title: 'EPOB Preparation',
-    rows: [
-      { label: 'Sourced from', value: 'Memberchuk, Dhemaji', emphasis: true },
-      { label: '', value: '27.57°N, 94.74°E' },
-      { label: '', value: 'Majulipur, Dhemaji', emphasis: true },
-      { label: '', value: '27.76°N, 95.06°E' },
-    ],
-    footer: { label: 'Collected on', value: '10 Oct 2025' },
-  },
-  {
-    title: 'Preparation of Fermentation',
-    rows: [
-      { label: 'Prepared at', value: 'Memberchuk, Dhemaji', emphasis: true },
-      { label: '', value: '27.57°N, 94.74°E' },
-      { label: 'Prepared by', value: 'Ardha SHG & Polo SHG', emphasis: true },
-    ],
-    footer: { label: 'Prepared on', value: '02 Nov 2025' },
-  },
-  {
-    title: 'Transportation',
-    rows: [
-      { label: 'From', value: 'Laimekuri', emphasis: true },
-      { label: '', value: '27.76°N, 95.06°E' },
-      { label: 'To', value: 'Guwahati Biotech Park', emphasis: true },
-      { label: '', value: '26.19°N, 91.67°E' },
-    ],
-    footer: { label: 'Duration', value: '10 Hours' },
-  },
-  {
-    title: 'Fermentation-Storage Facility',
-    rows: [
-      { label: 'Stored at', value: 'Amingaon, Guwahati', emphasis: true },
-      { label: '', value: '26.17°N, 91.71°E' },
-      { label: 'Storage facility', value: 'Guwahati Biotech Park', emphasis: true },
-    ],
-    footer: { label: 'Duration', value: '23 Days' },
-  },
-  {
-    title: 'Extraction & Stabilisation',
-    rows: [
-      { label: 'Extracted at', value: 'Sonaighuli, Dispur', emphasis: true },
-      { label: '', value: '26.14°N, 91.74°E' },
-      { label: 'Facility', value: 'Guwahati Biotech Park', emphasis: true },
-    ],
-    footer: { label: 'Duration', value: '3 Months' },
-  },
-  {
-    title: 'Bottling',
-    rows: [
-      { label: 'Bottled at', value: 'Sonaighuli, Dispur', emphasis: true },
-      { label: '', value: '26.14°N, 91.74°E' },
-      { label: 'Facility', value: 'Guwahati Biotech Park', emphasis: true },
-    ],
-    footer: { label: 'Bottled on', value: '07 Mar 2026' },
-  },
-]
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 
 const GOLD = '#F7A70C'
 const MUTED_LINE = 'rgba(255,255,255,0.22)'
@@ -195,14 +123,14 @@ function SourceCard({ tile, isActive, boxRef }) {
   )
 }
 
-function Tile({ tile, index, isActive, side, dotAnchorRef, boxRef }) {
+function Tile({ tile, index, count, isActive, side, dotAnchorRef, boxRef }) {
   return (
     <div
       style={{
         display: 'flex',
         justifyContent: side === 'left' ? 'flex-start' : 'flex-end',
         position: 'relative',
-        marginBottom: index < TILES.length - 1 ? '54px' : '0',
+        marginBottom: index < count - 1 ? '54px' : '0',
       }}
     >
       <div className="w-[88%] md:w-[401.59px]" style={{ position: 'relative' }}>
@@ -345,7 +273,9 @@ const Connector = memo(function Connector({ points, boxes, activeIndex, containe
   )
 })
 
-function useScrollActiveIndex(boxRefs, count) {
+// `scrollRoot` is the element that scrolls; the window when not given (the
+// admin preview scrolls inside an overlay instead).
+function useScrollActiveIndex(boxRefs, count, scrollRoot) {
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -374,31 +304,31 @@ function useScrollActiveIndex(boxRefs, count) {
       raf = requestAnimationFrame(update)
     }
     update()
-    window.addEventListener('scroll', onScroll, { passive: true })
+    const scroller = scrollRoot?.current || window
+    scroller.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      scroller.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       if (raf != null) cancelAnimationFrame(raf)
     }
-  }, [boxRefs, count])
+  }, [boxRefs, count, scrollRoot])
 
   return activeIndex
 }
 
-export default function TraceabilityPage() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { batch, serial } = location.state || {}
-  const goToGate = () => navigate('/trace', { state: { batch, serial } })
-
+// The connected card timeline on its own, so the admin preview can show
+// exactly what customers will see.
+export function TraceabilityTimeline({ tiles, scrollRoot }) {
   const containerRef = useRef(null)
   const anchorRefs = useRef([])
   const boxRefs = useRef([])
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  anchorRefs.current.length = tiles.length
+  boxRefs.current.length = tiles.length
 
   const { points, boxes } = useConnectorPoints(containerRef, anchorRefs, boxRefs)
-  const activeIndex = useScrollActiveIndex(boxRefs, TILES.length)
+  const activeIndex = useScrollActiveIndex(boxRefs, tiles.length, scrollRoot)
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -421,6 +351,70 @@ export default function TraceabilityPage() {
       window.removeEventListener('resize', measure)
     }
   }, [])
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      {tiles.map((tile, i) => (
+        <Tile
+          key={i}
+          tile={tile}
+          index={i}
+          count={tiles.length}
+          side={i % 2 === 0 ? 'left' : 'right'}
+          isActive={activeIndex === i}
+          dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
+          boxRef={(el) => { boxRefs.current[i] = el }}
+        />
+      ))}
+      <Connector points={points} boxes={boxes} activeIndex={activeIndex} containerSize={containerSize} />
+    </div>
+  )
+}
+
+// Generous bottom spacer: the scroll-driven active-card detection needs enough
+// room below the last card for its center to actually reach the reference
+// line the scroll logic looks for — without it, the last couple of cards can
+// never be picked no matter how far you scroll, since there's simply no more
+// room to scroll into.
+export const TIMELINE_BOTTOM_SPACE = 'max(24px, 60vh)'
+
+export default function TraceabilityPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [params] = useSearchParams()
+  const batch = params.get('batch') ?? location.state?.batch
+  const serial = params.get('serial') ?? location.state?.serial ?? ''
+  const goToGate = () => navigate('/trace', { state: { batch, serial } })
+
+  // The gate page passes the cards along after checking the serial; on a
+  // refresh or a shared link they're fetched again here.
+  const [tiles, setTiles] = useState(location.state?.tiles || null)
+  const [loadError, setLoadError] = useState(false)
+
+  useEffect(() => {
+    if (tiles) return
+    if (!batch) {
+      navigate('/trace', { replace: true })
+      return
+    }
+    let cancelled = false
+    const query = new URLSearchParams({ batch, serial })
+    fetch(`/api/trace?${query}`)
+      .then(async (res) => {
+        if (cancelled) return
+        if (res.status === 404) {
+          // Batch hidden or serial not registered: send them back to the gate
+          // with the numbers filled in so the error shows there.
+          navigate('/trace', { replace: true, state: { batch, serial, recheck: true } })
+          return
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const body = await res.json()
+        if (!cancelled) setTiles(body.tiles)
+      })
+      .catch(() => { if (!cancelled) setLoadError(true) })
+    return () => { cancelled = true }
+  }, [tiles, batch, serial, navigate])
 
   return (
     <div className="min-h-dvh flex flex-col items-center" style={{ backgroundColor: '#000000' }}>
@@ -491,32 +485,30 @@ export default function TraceabilityPage() {
         className="w-full flex flex-col items-center px-10"
         style={{
           paddingTop: '32px',
-          // Generous bottom spacer: the scroll-driven active-card detection
-          // needs enough room below the last card for its center to actually
-          // reach the reference line the scroll logic looks for — without it,
-          // the last couple of cards can never be picked no matter how far
-          // you scroll, since there's simply no more room to scroll into.
-          paddingBottom: 'max(24px, 60vh)',
+          paddingBottom: TIMELINE_BOTTOM_SPACE,
         }}
       >
         <div className="w-full max-w-[420px] flex flex-col">
 
-          {/* Tiles + connector */}
-          <div ref={containerRef} style={{ position: 'relative' }}>
-            {TILES.map((tile, i) => (
-              <Tile
-                key={i}
-                tile={tile}
-                index={i}
-                side={i % 2 === 0 ? 'left' : 'right'}
-                isActive={activeIndex === i}
-                dotAnchorRef={(el) => { anchorRefs.current[i] = el }}
-                boxRef={(el) => { boxRefs.current[i] = el }}
-              />
-            ))}
-            <Connector points={points} boxes={boxes} activeIndex={activeIndex} containerSize={containerSize} />
-          </div>
-
+          {tiles ? (
+            <TraceabilityTimeline tiles={tiles} />
+          ) : (
+            <p className="text-center text-[0.8rem]" style={{ color: 'rgba(255,255,255,0.5)', paddingTop: '48px' }}>
+              {loadError ? (
+                <>
+                  Couldn't load the traceability details.{' '}
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="bg-transparent border-none p-0 cursor-pointer"
+                    style={{ color: GOLD, fontFamily: 'inherit', fontSize: 'inherit' }}
+                  >
+                    Try again
+                  </button>
+                </>
+              ) : 'Loading…'}
+            </p>
+          )}
         </div>
       </div>
     </div>

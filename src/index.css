@@ -50,3 +50,90 @@ html, body, #root {
   transform: scale(0.97);
   transition: color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
 }
+
+/* ---------- Admin: same design language, light theme ---------- */
+/* In the components layer so Tailwind utility classes (widths etc.) can
+   override these defaults. */
+@layer components {
+.admin-light {
+  --a-bg: #ffffff;
+  --a-surface: #faf9f6;
+  --a-text: #1a1a1a;
+  --a-muted: #6b6b6b;
+  --a-border: #e4e1d9;
+  --a-gold: #F7A70C;
+  /* Bright gold is too faint as text on white; this darker gold keeps the
+     Tipo feel while staying readable. */
+  --a-gold-text: #8f5f00;
+  --a-gold-soft: #fff6e0;
+  --a-danger: #b42318;
+  --a-danger-soft: #fdecea;
+  --a-ok: #1e7a3c;
+  --a-ok-soft: #e8f5ec;
+  background: var(--a-bg);
+  color: var(--a-text);
+  min-height: 100dvh;
+}
+
+.admin-btn {
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--a-gold);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--a-gold-text);
+  font-family: 'Mainlux', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.025em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.admin-btn:hover { background: var(--a-gold-soft); }
+.admin-btn.primary { background: var(--a-gold); color: #1a1a1a; }
+.admin-btn.primary:hover { background: #e89c08; }
+.admin-btn.quiet { border-color: var(--a-border); color: var(--a-text); }
+.admin-btn.quiet:hover { background: var(--a-surface); border-color: #cfcabe; }
+.admin-btn.danger { border-color: #e9b8b3; color: var(--a-danger); }
+.admin-btn.danger:hover { background: var(--a-danger-soft); }
+.admin-btn.small { height: 36px; padding: 0 12px; font-size: 0.78rem; }
+.admin-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.admin-btn:not(:disabled):active { transform: scale(0.97); transition: transform 0.1s ease; }
+
+.admin-input {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--a-border);
+  border-radius: 4px;
+  padding: 11px 14px;
+  font-family: 'Mainlux', sans-serif;
+  font-size: 0.95rem;
+  color: var(--a-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.admin-input::placeholder { color: rgba(0, 0, 0, 0.3); }
+.admin-input:focus { border-color: var(--a-gold); box-shadow: 0 0 0 3px rgba(247, 167, 12, 0.18); }
+.admin-input.invalid { border-color: var(--a-danger); }
+textarea.admin-input { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+.admin-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--a-muted);
+}
+
+.admin-panel {
+  background: #ffffff;
+  border: 1px solid var(--a-border);
+  border-radius: 14px;
+}
+
+.admin-light :focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
+.admin-light .admin-input:focus-visible { outline: none; }
+}

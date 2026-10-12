@@ -25,3 +25,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Local admin data (file storage)
+data/
+.env*.local
