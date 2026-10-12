@@ -240,8 +240,9 @@ export default function SerialsPanel({ batch, onBatchChange }) {
 
 function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }) {
   const isAdd = review.action === 'add'
-  const known = review.serials.filter((s) => registered.has(s)).length
-  const effective = isAdd ? review.serials.length - known : known
+  const changing = review.serials.filter((s) => registered.has(s) !== isAdd)
+  const effective = changing.length
+  const unchanged = review.serials.filter((s) => registered.has(s) === isAdd)
 
   return (
     <Dialog
@@ -257,17 +258,21 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
       )}
     >
       <p style={{ color: 'var(--a-muted)' }}>From: {review.source}</p>
-      {/* A sentence rather than big numbers, so a count like "1" isn't
-          mistaken for a serial number. */}
+      {/* Name the serial when there's only one, so the sentence can't be
+          misread ("1 will be added to Batch 1"). */}
       <p className="text-[0.92rem]">
-        Found <strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{plural(review.serials.length, 'serial number')}</strong>.{' '}
-        {isAdd
-          ? <><strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{effective.toLocaleString()}</strong> will be added to Batch {batchId}.</>
-          : <><strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{effective.toLocaleString()}</strong> will be removed from Batch {batchId}.</>}
+        {effective === 0
+          ? (isAdd ? `Nothing new to add - ${review.serials.length === 1 ? 'this serial is' : 'these serials are'} already in Batch ${batchId}.` : `None of these serials are in Batch ${batchId}.`)
+          : <>
+              {effective === 1 ? <>Serial <Gold>{changing[0]}</Gold></> : <><Gold>{effective.toLocaleString()}</Gold> serial numbers</>}
+              {isAdd ? ` will be added to Batch ${batchId}.` : ` will be removed from Batch ${batchId}.`}
+            </>}
       </p>
-      {isAdd && known > 0 && <Notice tone="info">{known.toLocaleString()} already registered - they'll be skipped.</Notice>}
-      {!isAdd && review.serials.length - known > 0 && (
-        <Notice tone="info">{(review.serials.length - known).toLocaleString()} aren't registered in this batch - nothing to remove for those.</Notice>
+      {effective > 0 && unchanged.length > 0 && (
+        <Notice tone="info">
+          {isAdd ? `Already in Batch ${batchId}, skipped: ` : `Not in Batch ${batchId}, skipped: `}
+          {unchanged.slice(0, 8).join(', ')}{unchanged.length > 8 ? ` and ${(unchanged.length - 8).toLocaleString()} more` : ''}
+        </Notice>
       )}
       {review.skipped.length > 0 && (
         <Notice tone="gold">
@@ -297,6 +302,6 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
   )
 }
 
-function plural(n, word) {
-  return `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`
+function Gold({ children }) {
+  return <strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{children}</strong>
 }
