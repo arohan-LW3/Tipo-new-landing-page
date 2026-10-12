@@ -190,7 +190,10 @@ export default function SerialsPanel({ batch, onBatchChange }) {
       {/* Remove */}
       {serials && serials.length > 0 && (
         <details className="admin-panel" style={{ padding: '18px' }}>
-          <summary className="cursor-pointer text-[0.95rem]">Remove serial numbers</summary>
+          <summary className="cursor-pointer text-[1.05rem] flex items-center justify-between gap-3 list-none [&::-webkit-details-marker]:hidden" style={{ color: 'var(--a-gold-text)' }}>
+            Remove serial numbers
+            <Icon name="arrowForwardIos" size={14} style={{ color: 'var(--a-muted)', transform: 'rotate(90deg)' }} />
+          </summary>
           <div className="flex flex-col gap-4" style={{ marginTop: '14px' }}>
             <SerialBoxes label="Serial numbers to remove" values={removeList} onChange={setRemoveList} />
             <div className="flex flex-col md:flex-row gap-2">

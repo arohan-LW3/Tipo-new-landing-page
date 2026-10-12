@@ -138,10 +138,8 @@ export default function BatchesPage() {
               <button
                 type="button"
                 onClick={() => navigate(`/admin/batch/${encodeURIComponent(b.id)}`)}
-                className="admin-panel w-full text-left cursor-pointer flex items-center gap-4"
-                style={{ padding: '18px', fontFamily: 'inherit', color: 'inherit', transition: 'border-color 0.2s ease' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--a-gold)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '' }}
+                className="admin-panel admin-hover-card w-full text-left cursor-pointer flex items-center gap-4"
+                style={{ padding: '18px', fontFamily: 'inherit', color: 'inherit' }}
               >
                 <div className="flex-1 min-w-0 flex flex-col gap-3">
                 <span className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)' }}>Batch {b.id}</span>

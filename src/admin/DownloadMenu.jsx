@@ -53,7 +53,7 @@ export default function DownloadMenu({ label, formats, onPick, small, openUp }) 
           style={{
             position: 'absolute',
             [openUp ? 'bottom' : 'top']: 'calc(100% + 6px)',
-            ...(openUp ? { left: 0 } : { right: 0 }),
+            left: 0,
             zIndex: 20,
             width: 'min(320px, calc(100vw - 40px))',
             padding: '6px',

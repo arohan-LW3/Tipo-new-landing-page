@@ -144,6 +144,13 @@ textarea.admin-input { resize: vertical; min-height: 120px; line-height: 1.5; }
   .admin-light * { scrollbar-width: thin; scrollbar-color: var(--a-gold) transparent; }
 }
 
+/* Gold border on hover, only for real mouse pointers so it doesn't stick
+   after a tap on phones. */
+.admin-hover-card { transition: border-color 0.2s ease; }
+@media (hover: hover) and (pointer: fine) {
+  .admin-hover-card:hover { border-color: var(--a-gold); }
+}
+
 .admin-light :focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
 .admin-light .admin-input:focus-visible { outline: none; }
 }

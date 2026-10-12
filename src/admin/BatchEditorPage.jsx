@@ -420,8 +420,13 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
     <section className="admin-panel" style={{ overflow: 'hidden' }}>
       {/* Card header */}
       <div className="flex flex-col gap-2" style={{ padding: '14px 16px', borderBottom: '1px solid var(--a-border)', background: 'var(--a-surface)' }}>
-      {/* Label lines up with the title box: 28px number badge + 12px gap */}
-      <label htmlFor={`card-${index}-title`} className="admin-label" style={{ marginLeft: '40px' }}>Process</label>
+      {/* Label lines up with the title box (28px number badge + 12px gap);
+          the card's buttons share its line so they never stack above the
+          entry buttons on phones. */}
+      <div className="flex items-center justify-between gap-2">
+        <label htmlFor={`card-${index}-title`} className="admin-label" style={{ marginLeft: '40px' }}>Process</label>
+        <div className="flex gap-1">{cardActions}</div>
+      </div>
       <div className="flex items-center gap-3">
         <span
           className="flex items-center justify-center text-[0.8rem]"
@@ -438,10 +443,8 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
           onChange={(e) => onChange((t) => { t.title = e.target.value })}
           style={{ color: 'var(--a-gold-text)', fontSize: '1rem' }}
         />
-        <div className="hidden md:flex gap-1">{cardActions}</div>
       </div>
       </div>
-      <div className="flex md:hidden gap-1 justify-end" style={{ padding: '8px 16px 0' }}>{cardActions}</div>
 
       {/* Entries: label, place, geo coordinates */}
       <div className="flex flex-col gap-4" style={{ padding: '16px' }}>
