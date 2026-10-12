@@ -157,17 +157,15 @@ export default function BatchesPage() {
               <button
                 type="button"
                 onClick={() => navigate(`/admin/batch/${encodeURIComponent(b.id)}`)}
-                className="admin-panel w-full text-left cursor-pointer flex flex-col gap-3"
+                className="admin-panel w-full text-left cursor-pointer flex items-center gap-4"
                 style={{ padding: '18px', fontFamily: 'inherit', color: 'inherit', transition: 'border-color 0.2s ease' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--a-gold)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = '' }}
               >
+                <div className="flex-1 min-w-0 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)' }}>Batch {b.id}</span>
-                  <span className="flex items-center gap-2">
-                    <LiveBadge live={b.live} />
-                    <Icon name="arrowForwardIos" size={16} style={{ color: 'var(--a-muted)' }} />
-                  </span>
+                  <LiveBadge live={b.live} />
                 </div>
                 <div className="flex gap-5 text-[0.8rem]">
                   <span><strong style={{ fontWeight: 'normal', fontSize: '1rem' }}>{b.tiles.length}</strong> <span style={{ color: 'var(--a-muted)' }}>cards</span></span>
@@ -176,6 +174,9 @@ export default function BatchesPage() {
                 <span className="text-[0.72rem]" style={{ color: 'var(--a-muted)' }}>
                   {b.updatedAt ? `Last updated ${formatDate(b.updatedAt)}${b.updatedBy ? ` by ${b.updatedBy}` : ''}` : 'Not edited yet'}
                 </span>
+                </div>
+                {/* Centred on the whole card, not just the title row */}
+                <Icon name="arrowForwardIos" size={16} style={{ color: 'var(--a-muted)' }} />
               </button>
             </li>
           ))}
