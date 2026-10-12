@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-[4px] px-4 py-3.5 text-[0.95rem] text-white placeholder:text-white/30 outline-none focus:border-[#F7A70C] transition-colors"
 
@@ -8,8 +8,10 @@ const BATCH_OPTIONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 export default function TraceabilityGatePage() {
   const navigate = useNavigate()
-  const [batch, setBatch] = useState('')
-  const [serial, setSerial] = useState('')
+  // Pre-filled when arriving from the Batch/Serial chips on the traceability page
+  const { state } = useLocation()
+  const [batch, setBatch] = useState(state?.batch ?? '')
+  const [serial, setSerial] = useState(state?.serial ?? '')
   const [batchDropdownOpen, setBatchDropdownOpen] = useState(false)
   const batchFieldRef = useRef(null)
 
@@ -40,7 +42,7 @@ export default function TraceabilityGatePage() {
       >
         <div className="w-full max-w-[420px] md:max-w-[560px] flex items-center">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             className="flex items-center mr-4 bg-transparent border-none cursor-pointer p-0"
           >
             <img src="/assets/arrow-back.svg" alt="Back" className="w-6 h-6" />

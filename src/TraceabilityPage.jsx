@@ -390,6 +390,7 @@ export default function TraceabilityPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { batch, serial } = location.state || {}
+  const goToGate = () => navigate('/trace', { state: { batch, serial } })
 
   const containerRef = useRef(null)
   const anchorRefs = useRef([])
@@ -441,8 +442,13 @@ export default function TraceabilityPage() {
           </button>
           {batch ? (
             <div style={{ display: 'flex', gap: '8px' }}>
-              <span
+              <button
+                type="button"
+                onClick={goToGate}
                 style={{
+                  background: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
                   color: '#fff',
                   fontSize: '0.75rem',
                   letterSpacing: '0.03em',
@@ -452,10 +458,15 @@ export default function TraceabilityPage() {
                 }}
               >
                 Batch No. {batch}
-              </span>
+              </button>
               {serial && (
-                <span
+                <button
+                  type="button"
+                  onClick={goToGate}
                   style={{
+                    background: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
                     color: '#fff',
                     fontSize: '0.75rem',
                     letterSpacing: '0.03em',
@@ -465,7 +476,7 @@ export default function TraceabilityPage() {
                   }}
                 >
                   Serial No. {serial}
-                </span>
+                </button>
               )}
             </div>
           ) : (
