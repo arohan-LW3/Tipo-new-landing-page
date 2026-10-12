@@ -164,7 +164,7 @@ function SourceCard({ tile, isActive, boxRef }) {
 
       {/* Desktop layout: bordered card, plain header, dark footer strip */}
       <div
-        className="hidden md:flex md:flex-col md:justify-between md:h-[196px]"
+        className="hidden md:flex md:flex-col md:justify-between md:min-h-[196px]"
         style={{
           backgroundColor: '#000000',
           border: `1px solid ${isActive ? '#F7A70C' : 'rgba(247,167,12,0.4)'}`,
