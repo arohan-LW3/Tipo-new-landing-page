@@ -12,7 +12,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
   const [message, setMessage] = useState('')
   const [lookup, setLookup] = useState('')
   const [mode, setMode] = useState('type')      // how to add: type | file
-  const [text, setText] = useState('')
+  const [addList, setAddList] = useState([''])  // one serial per box
   const [review, setReview] = useState(null)    // { action: 'add'|'remove', serials, skipped, source }
   const [busy, setBusy] = useState(false)
   const [reading, setReading] = useState(false)
@@ -66,7 +66,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
         const r = await adminApi.addSerials(batch.id, review.serials)
         setMessage(`Added ${r.added.toLocaleString()} serial number${r.added === 1 ? '' : 's'} to Batch ${batch.id}.${r.alreadyThere ? ` ${r.alreadyThere.toLocaleString()} were already registered.` : ''}${r.invalidCount ? ` ${r.invalidCount} couldn't be used.` : ''}`)
         onBatchChange(r.batch)
-        setText('')
+        setAddList([''])
       } else {
         const r = await adminApi.removeSerials(batch.id, review.serials)
         setMessage(`Removed ${r.removed.toLocaleString()} serial number${r.removed === 1 ? '' : 's'}.${r.notFound ? ` ${r.notFound.toLocaleString()} weren't registered.` : ''}`)
@@ -147,23 +147,17 @@ export default function SerialsPanel({ batch, onBatchChange }) {
       <section className="admin-panel flex flex-col gap-4" style={{ padding: '18px' }}>
         <h2 className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)', fontWeight: 'normal' }}>Add serial numbers</h2>
         <div className="flex gap-2">
-          <button type="button" className={`admin-btn small ${mode === 'type' ? 'primary' : 'quiet'}`} onClick={() => setMode('type')}>Type or paste</button>
+          <button type="button" className={`admin-btn small ${mode === 'type' ? 'primary' : 'quiet'}`} onClick={() => setMode('type')}>Type</button>
           <button type="button" className={`admin-btn small ${mode === 'file' ? 'primary' : 'quiet'}`} onClick={() => setMode('file')}>Upload a file</button>
         </div>
 
         {mode === 'type' ? (
           <>
-            <Field hint="One per line, or separated by commas or spaces. Ranges work too: 1-500 adds 1 to 500, A001-A050 adds A001 to A050.">
-              <textarea
-                className="admin-input"
-                rows={6}
-                placeholder={'1001\n1002\n1003-1500'}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              />
-            </Field>
-            <button type="button" className="admin-btn primary self-start" disabled={!text.trim()} onClick={() => startReview('add', parseSerialText(text), 'typed list')}>
+            <SerialBoxes label="Serial numbers to add" values={addList} onChange={setAddList} />
+            <p className="text-[0.74rem]" style={{ color: 'var(--a-muted)', lineHeight: 1.55 }}>
+              One serial number per box. Use + for another box. A range like 1001-1500 in one box adds all of them.
+            </p>
+            <button type="button" className="admin-btn primary self-start" disabled={!addList.some((v) => v.trim())} onClick={() => startReview('add', parseSerialText(addList.join('\n')), 'typed list')}>
               Review
             </button>
           </>
@@ -194,48 +188,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
         <details className="admin-panel" style={{ padding: '18px' }}>
           <summary className="cursor-pointer text-[0.95rem]">Remove serial numbers</summary>
           <div className="flex flex-col gap-4" style={{ marginTop: '14px' }}>
-            <div className="flex flex-col gap-2">
-              <span className="admin-label">Serial numbers to remove</span>
-              <div className="flex flex-wrap items-center gap-2">
-                {removeList.map((value, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    <input
-                      className="admin-input"
-                      aria-label={`Serial number ${i + 1} to remove`}
-                      placeholder="e.g. 1002"
-                      value={value}
-                      maxLength={40}
-                      autoFocus={i > 0 && i === removeList.length - 1 && !value}
-                      onChange={(e) => setRemoveList((l) => l.map((v, j) => (j === i ? e.target.value : v)))}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setRemoveList((l) => [...l, '']) } }}
-                      style={{ width: '150px' }}
-                    />
-                    {removeList.length > 1 && (
-                      <button
-                        type="button"
-                        aria-label="Remove this box"
-                        title="Remove this box"
-                        onClick={() => setRemoveList((l) => l.filter((_, j) => j !== i))}
-                        className="flex items-center justify-center bg-transparent cursor-pointer"
-                        style={{ width: '34px', height: '34px', borderRadius: '4px', border: '1px solid var(--a-border)', color: 'var(--a-muted)' }}
-                      >
-                        <Icon name="delete" size={18} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  aria-label="Add another serial number"
-                  title="Add another serial number"
-                  onClick={() => setRemoveList((l) => [...l, ''])}
-                  className="admin-btn quiet"
-                  style={{ width: '46px', padding: 0 }}
-                >
-                  <Icon name="add" size={20} />
-                </button>
-              </div>
-            </div>
+            <SerialBoxes label="Serial numbers to remove" values={removeList} onChange={setRemoveList} />
             <div className="flex flex-col md:flex-row gap-2">
               <button type="button" className="admin-btn danger" disabled={!removeList.some((v) => v.trim())} onClick={() => startReview('remove', parseSerialText(removeList.join('\n')), 'typed list')}>
                 Review removal
@@ -342,4 +295,65 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
 
 function Gold({ children }) {
   return <strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{children}</strong>
+}
+
+// A row of small boxes, one serial number each, with + for another box.
+// Pasting a list into a box spreads it over several boxes.
+function SerialBoxes({ label, values, onChange }) {
+  const set = (i, v) => onChange(values.map((x, j) => (j === i ? v : x)))
+
+  function paste(i, e) {
+    const parts = e.clipboardData.getData('text').split(/[\s,;]+/).filter(Boolean)
+    if (parts.length < 2) return
+    e.preventDefault()
+    const next = [...values]
+    next.splice(i, 1, ...parts)
+    onChange(next)
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="admin-label">{label}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        {values.map((value, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <input
+              className="admin-input"
+              aria-label={`${label} - box ${i + 1}`}
+              placeholder="e.g. 1001"
+              value={value}
+              maxLength={40}
+              autoFocus={i > 0 && i === values.length - 1 && !value}
+              onChange={(e) => set(i, e.target.value)}
+              onPaste={(e) => paste(i, e)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onChange([...values, '']) } }}
+              style={{ width: '150px', fontVariantNumeric: 'tabular-nums' }}
+            />
+            {values.length > 1 && (
+              <button
+                type="button"
+                aria-label="Remove this box"
+                title="Remove this box"
+                onClick={() => onChange(values.filter((_, j) => j !== i))}
+                className="flex items-center justify-center bg-transparent cursor-pointer"
+                style={{ width: '34px', height: '34px', borderRadius: '4px', border: '1px solid var(--a-border)', color: 'var(--a-muted)' }}
+              >
+                <Icon name="delete" size={18} />
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          aria-label="Add another serial number"
+          title="Add another serial number"
+          onClick={() => onChange([...values, ''])}
+          className="admin-btn quiet"
+          style={{ width: '46px', padding: 0 }}
+        >
+          <Icon name="add" size={20} />
+        </button>
+      </div>
+    </div>
+  )
 }
