@@ -297,7 +297,8 @@ function Gold({ children }) {
   return <strong style={{ fontWeight: 'normal', color: 'var(--a-gold-text)' }}>{children}</strong>
 }
 
-// A row of small boxes, one serial number each, with + for another box.
+// A column of small boxes, one serial number each, with + below for another
+// box.
 // Pasting a list into a box spreads it over several boxes.
 function SerialBoxes({ label, values, onChange }) {
   const set = (i, v) => onChange(values.map((x, j) => (j === i ? v : x)))
@@ -314,7 +315,8 @@ function SerialBoxes({ label, values, onChange }) {
   return (
     <div className="flex flex-col gap-2">
       <span className="admin-label">{label}</span>
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Boxes stack downwards, one per line */}
+      <div className="flex flex-col items-start gap-2">
         {values.map((value, i) => (
           <div key={i} className="flex items-center gap-1">
             <input
