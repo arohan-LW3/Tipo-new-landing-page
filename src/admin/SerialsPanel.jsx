@@ -118,7 +118,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
           <>
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <p className="text-[0.95rem]">
-                <Gold>{serials.length.toLocaleString()}</Gold> serial number{serials.length === 1 ? '' : 's'} registered in <Gold>Batch {batch.id}</Gold>
+                <Gold>'{serials.length.toLocaleString()}'</Gold> serial number{serials.length === 1 ? '' : 's'} registered in <Gold>'Batch {batch.id}'</Gold>
               </p>
               {serials.length > 0 && <button type="button" className="admin-btn quiet small" onClick={downloadCsv}>
                   <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
