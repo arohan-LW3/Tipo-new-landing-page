@@ -49,7 +49,7 @@ export default function ContactForm() {
       {status === 'success' ? (
         <div className="w-full text-center py-12 border border-[#F7A70C]/40 rounded-[4px]">
           <p className="text-[#F7A70C] text-[1.05rem] mb-2">Message sent</p>
-          <p className="text-white/50 text-[0.8rem]">Thanks for reaching out — we'll reply soon.</p>
+          <p className="text-white/50 text-[0.8rem]">Thanks for reaching out - we'll reply soon.</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">

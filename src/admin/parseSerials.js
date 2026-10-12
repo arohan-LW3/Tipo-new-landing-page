@@ -1,5 +1,5 @@
-// Turns whatever the owners give us — typed text, a CSV, an Excel sheet or a
-// PDF — into a list of serial numbers. Everything runs in the browser; files
+// Turns whatever the owners give us - typed text, a CSV, an Excel sheet or a
+// PDF - into a list of serial numbers. Everything runs in the browser; files
 // are never uploaded anywhere. The server normalizes and validates again.
 
 const MAX_RANGE = 200000
@@ -154,7 +154,7 @@ async function parsePdf(file) {
 
   const text = lines.join('\n')
   if (!text.trim()) {
-    return { serials: [], skipped: [], warning: 'This PDF has no readable text — it may be a scan or a photo. Please use an Excel or CSV file instead.' }
+    return { serials: [], skipped: [], warning: 'This PDF has no readable text - it may be a scan or a photo. Please use an Excel or CSV file instead.' }
   }
   const tokens = []
   for (const line of text.split('\n')) {

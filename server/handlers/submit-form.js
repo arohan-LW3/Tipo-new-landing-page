@@ -17,7 +17,7 @@ function buildEmailHtml({ name, email, subject, message }) {
     .map(([label, value]) => `
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#666;font-weight:600;white-space:nowrap;vertical-align:top">${label}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;white-space:pre-wrap">${escapeHtml(value || '—')}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;white-space:pre-wrap">${escapeHtml(value || '-')}</td>
       </tr>
     `)
     .join('')
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       from: 'Tipo Contact <forms@heritagetipo.com>',
       to: 'info@heritagetipo.com',
       replyTo: email,
-      subject: `New Contact Form — ${subject || 'No subject'}`,
+      subject: `New Contact Form - ${subject || 'No subject'}`,
       html: buildEmailHtml({ name, email, subject, message }),
     })
 

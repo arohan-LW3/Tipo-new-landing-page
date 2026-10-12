@@ -167,7 +167,7 @@ export default function FermentationModal({ onClose }) {
       window.removeEventListener('wheel', onWheel)
       window.removeEventListener('keydown', onKey)
     }
-  }, [])  // empty — registered once, never torn down
+  }, [])  // empty - registered once, never torn down
 
   return (
     <div

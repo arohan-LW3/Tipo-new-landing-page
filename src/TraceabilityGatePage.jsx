@@ -207,14 +207,13 @@ export default function TraceabilityGatePage() {
             </button>
           </form>
 
-          {/* Kept low-key: this page is mainly for customers */}
           <button
             type="button"
             onClick={() => navigate('/admin/login')}
-            className="bg-transparent border-none cursor-pointer text-[0.7rem] tracking-[0.08em] uppercase text-white/35 hover:text-[#F7A70C] transition-colors"
-            style={{ marginTop: '28px', padding: '8px 12px', fontFamily: 'inherit' }}
+            style={{ width: '100%', borderColor: '#ffffff', color: '#ffffff', marginTop: '20px' }}
+            className="tipo-btn h-[48px] border rounded-[4px] text-[0.85rem] tracking-wide bg-transparent cursor-pointer"
           >
-            Admin login
+            Admin Login
           </button>
         </div>
       </div>

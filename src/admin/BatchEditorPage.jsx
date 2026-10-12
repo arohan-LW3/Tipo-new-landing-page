@@ -15,7 +15,7 @@ const clone = (v) => JSON.parse(JSON.stringify(v))
 
 // The website stores each card's body as rows: a large gold row (the place or
 // name) optionally followed by an unlabelled small row (its coordinates). The
-// editor works with "entries" instead — label, place, coordinates — so nobody
+// editor works with "entries" instead - label, place, coordinates - so nobody
 // has to think about row styles.
 function rowsToEntries(rows) {
   const entries = []
@@ -258,8 +258,8 @@ export default function BatchEditorPage() {
                 <Toggle
                   checked={draft.live}
                   onChange={(v) => update((d) => { d.live = v })}
-                  onText="Live — customers can trace this batch"
-                  offText="Hidden — shows as “not yet available”"
+                  onText="Live - customers can trace this batch"
+                  offText="Hidden - shows as “not yet available”"
                 />
               </div>
             </div>

@@ -39,7 +39,7 @@ export default function BatchesPage() {
       const body = await adminApi.exportData()
       downloadFile(`tipo-traceability-${body.exportedAt.slice(0, 10)}.json`, JSON.stringify(body, null, 2), 'application/json')
       flagDownloaded()
-      setMessage('Downloaded a copy of all batches and serial numbers. Keep this file safe — it can be uploaded again on any Tipo admin.')
+      setMessage('Downloaded a copy of all batches and serial numbers. Keep this file safe - it can be uploaded again on any Tipo admin.')
     } catch (err) {
       setError(err.message)
     }

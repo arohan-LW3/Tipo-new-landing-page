@@ -265,9 +265,9 @@ function ReviewDialog({ review, registered, batchId, busy, onCancel, onConfirm }
           gold
         />
       </div>
-      {isAdd && known > 0 && <Notice tone="info">{known.toLocaleString()} already registered — they'll be skipped.</Notice>}
+      {isAdd && known > 0 && <Notice tone="info">{known.toLocaleString()} already registered - they'll be skipped.</Notice>}
       {!isAdd && review.serials.length - known > 0 && (
-        <Notice tone="info">{(review.serials.length - known).toLocaleString()} aren't registered in this batch — nothing to remove for those.</Notice>
+        <Notice tone="info">{(review.serials.length - known).toLocaleString()} aren't registered in this batch - nothing to remove for those.</Notice>
       )}
       {review.skipped.length > 0 && (
         <Notice tone="gold">

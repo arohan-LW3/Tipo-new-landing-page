@@ -211,7 +211,7 @@ const Connector = memo(function Connector({ points, boxes, activeIndex, containe
       return `M ${p0.x} ${p0.y} L ${p1.x} ${p1.y}`
     }
     // Bend sits at the exact center of the real gap between the two cards'
-    // edges, so the vertical clearance above and below is always equal —
+    // edges, so the vertical clearance above and below is always equal -
     // not just "at least some minimum", which used to alternate depending
     // on where each card's own dot happened to sit.
     const midY = lowerBound != null && upperBound != null
@@ -373,7 +373,7 @@ export function TraceabilityTimeline({ tiles, scrollRoot }) {
 
 // Generous bottom spacer: the scroll-driven active-card detection needs enough
 // room below the last card for its center to actually reach the reference
-// line the scroll logic looks for — without it, the last couple of cards can
+// line the scroll logic looks for - without it, the last couple of cards can
 // never be picked no matter how far you scroll, since there's simply no more
 // room to scroll into.
 export const TIMELINE_BOTTOM_SPACE = 'max(24px, 60vh)'
