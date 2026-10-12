@@ -448,7 +448,10 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
   return (
     <section className="admin-panel" style={{ overflow: 'hidden' }}>
       {/* Card header */}
-      <div className="flex items-center gap-3" style={{ padding: '14px 16px', borderBottom: '1px solid var(--a-border)', background: 'var(--a-surface)' }}>
+      <div className="flex flex-col gap-2" style={{ padding: '14px 16px', borderBottom: '1px solid var(--a-border)', background: 'var(--a-surface)' }}>
+      {/* Label lines up with the title box: 28px number badge + 12px gap */}
+      <label htmlFor={`card-${index}-title`} className="admin-label" style={{ marginLeft: '40px' }}>Process</label>
+      <div className="flex items-center gap-3">
         <span
           className="flex items-center justify-center text-[0.8rem]"
           style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--a-gold)', color: 'var(--a-gold-text)', flexShrink: 0 }}
@@ -457,7 +460,7 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
         </span>
         <input
           className="admin-input"
-          aria-label={`Card ${index + 1} title`}
+          id={`card-${index}-title`}
           placeholder="Card title, e.g. Collection of Herbs"
           value={tile.title}
           maxLength={80}
@@ -465,6 +468,7 @@ function CardEditor({ tile, index, count, onChange, onDuplicate, onRemove }) {
           style={{ color: 'var(--a-gold-text)', fontSize: '1rem' }}
         />
         <div className="hidden md:flex gap-1">{cardActions}</div>
+      </div>
       </div>
       <div className="flex md:hidden gap-1 justify-end" style={{ padding: '8px 16px 0' }}>{cardActions}</div>
 
