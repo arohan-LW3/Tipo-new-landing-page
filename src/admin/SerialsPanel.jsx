@@ -142,6 +142,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
                 {registered.has(looked) ? `✓ ${looked} is registered in Batch ${batch.id}.` : `${looked} is not registered in Batch ${batch.id}.`}
               </Notice>
             )}
+            {serials.length > 0 && <SerialList serials={serials} />}
           </>
         )}
       </section>
@@ -359,6 +360,48 @@ function SerialBoxes({ label, values, onChange }) {
           <Icon name="add" size={20} />
         </button>
       </div>
+    </div>
+  )
+}
+
+// The registered serials in a scrollable column. Long lists are drawn in
+// steps so a batch with thousands of serials stays quick.
+const LIST_STEP = 500
+
+function SerialList({ serials }) {
+  const [shown, setShown] = useState(LIST_STEP)
+  useEffect(() => { setShown(LIST_STEP) }, [serials])
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="admin-label">Registered serial numbers</span>
+      <ol
+        className="flex flex-col"
+        style={{ maxHeight: '260px', overflowY: 'auto', border: '1px solid var(--a-border)', borderRadius: '8px', fontVariantNumeric: 'tabular-nums' }}
+      >
+        {serials.slice(0, shown).map((s, i) => (
+          <li
+            key={s}
+            className="flex items-center gap-3 text-[0.88rem]"
+            style={{ padding: '8px 14px', borderTop: i ? '1px solid var(--a-border)' : 'none' }}
+          >
+            <span className="text-[0.72rem]" style={{ color: 'var(--a-muted)', minWidth: '3.5em' }}>{(i + 1).toLocaleString()}</span>
+            {s}
+          </li>
+        ))}
+        {serials.length > shown && (
+          <li style={{ padding: '8px 14px', borderTop: '1px solid var(--a-border)' }}>
+            <button
+              type="button"
+              className="bg-transparent border-none p-0 cursor-pointer text-[0.82rem] underline"
+              style={{ color: 'var(--a-gold-text)', fontFamily: 'inherit' }}
+              onClick={() => setShown((n) => n + LIST_STEP)}
+            >
+              Show {Math.min(LIST_STEP, serials.length - shown).toLocaleString()} more ({(serials.length - shown).toLocaleString()} not shown)
+            </button>
+          </li>
+        )}
+      </ol>
     </div>
   )
 }
