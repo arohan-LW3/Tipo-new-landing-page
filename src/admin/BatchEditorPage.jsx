@@ -181,11 +181,18 @@ export default function BatchEditorPage() {
       </div>
 
       {/* Tabs */}
-      <div role="tablist" className="flex gap-1" style={{ marginBottom: '22px' }}>
+      {/* Underlined tabs on desktop, a two-way toggle on phones */}
+      <div role="tablist" className="hidden md:flex gap-1" style={{ marginBottom: '22px' }}>
         <TabButton active={tab === 'cards'} onClick={() => setTab('cards')}>Batch &amp; cards</TabButton>
         <TabButton active={tab === 'serials'} onClick={() => setTab('serials')} disabled={!saved}>
           Serial numbers{saved ? ` (${saved.serialCount.toLocaleString()})` : ''}
         </TabButton>
+      </div>
+      <div role="tablist" className="flex md:hidden" style={{ marginBottom: '22px', border: '1px solid var(--a-border)', borderRadius: '4px', overflow: 'hidden' }}>
+        <ToggleTab active={tab === 'cards'} onClick={() => setTab('cards')}>Batch &amp; cards</ToggleTab>
+        <ToggleTab active={tab === 'serials'} onClick={() => setTab('serials')} disabled={!saved}>
+          Serial numbers{saved ? ` (${saved.serialCount.toLocaleString()})` : ''}
+        </ToggleTab>
       </div>
 
       {tab === 'serials' && saved && (
@@ -347,6 +354,30 @@ function TabButton({ active, disabled, onClick, children }) {
         padding: '10px 14px',
         color: disabled ? 'rgba(0,0,0,0.3)' : active ? 'var(--a-gold-text)' : 'var(--a-muted)',
         borderBottom: `2px solid ${active ? 'var(--a-gold)' : 'transparent'}`,
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function ToggleTab({ active, disabled, onClick, children }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      disabled={disabled}
+      onClick={onClick}
+      title={disabled ? 'Publish the batch first, then add serial numbers' : undefined}
+      className="flex-1 border-none cursor-pointer text-[0.82rem] disabled:cursor-not-allowed"
+      style={{
+        fontFamily: 'inherit',
+        height: '44px',
+        padding: '0 8px',
+        background: active ? 'var(--a-gold)' : 'transparent',
+        color: disabled ? 'rgba(0,0,0,0.3)' : active ? '#1a1a1a' : 'var(--a-muted)',
+        transition: 'background-color 0.2s ease, color 0.2s ease',
       }}
     >
       {children}
