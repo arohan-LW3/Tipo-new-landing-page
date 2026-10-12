@@ -113,10 +113,14 @@ export default function SerialsPanel({ batch, onBatchChange }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        {message && <Notice tone="ok" onClose={() => setMessage('')}>{message}</Notice>}
-        {error && <Notice tone="error" onClose={() => setError('')}>{error}</Notice>}
-      </div>
+      {/* Only takes up space when there's something to say, so the gap under
+          the tabs matches the Batch & cards tab. */}
+      {(message || error) && (
+        <div className="flex flex-col gap-3">
+          {message && <Notice tone="ok" onClose={() => setMessage('')}>{message}</Notice>}
+          {error && <Notice tone="error" onClose={() => setError('')}>{error}</Notice>}
+        </div>
+      )}
 
       {/* Summary + lookup */}
       <section className="admin-panel flex flex-col gap-4" style={{ padding: '18px' }}>
