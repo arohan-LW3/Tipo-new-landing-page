@@ -134,6 +134,16 @@ textarea.admin-input { resize: vertical; min-height: 120px; line-height: 1.5; }
   border-radius: 14px;
 }
 
+/* Thin, solid scrollbars for scrolling boxes in the admin (e.g. the serial
+   list). Chrome, Safari and Edge use the -webkit- rules; Firefox can only do
+   "thin" with a colour, so it gets that instead. */
+.admin-light ::-webkit-scrollbar { width: 4px; height: 4px; }
+.admin-light ::-webkit-scrollbar-track { background: transparent; }
+.admin-light ::-webkit-scrollbar-thumb { background: var(--a-gold); border-radius: 4px; }
+@supports not selector(::-webkit-scrollbar) {
+  .admin-light * { scrollbar-width: thin; scrollbar-color: var(--a-gold) transparent; }
+}
+
 .admin-light :focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
 .admin-light .admin-input:focus-visible { outline: none; }
 }
