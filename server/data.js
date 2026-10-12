@@ -22,7 +22,7 @@ export class InputError extends Error {
 export const LIMITS = {
   batchId: 20,
   tiles: 30,
-  rows: 12,
+  rows: 20,
   title: 80,
   label: 60,
   value: 120,

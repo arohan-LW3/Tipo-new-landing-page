@@ -57,7 +57,7 @@ function CardRow({ row, small, largeSize, smallSize, isLast }) {
   )
 }
 
-function SourceCard({ tile, isActive, boxRef }) {
+export function SourceCard({ tile, isActive, boxRef }) {
   return (
     <div ref={boxRef} style={{ position: 'relative' }}>
       {/* Mobile layout: dark header bar, black body, white-divider footer */}

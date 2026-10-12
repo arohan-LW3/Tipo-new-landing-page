@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { adminApi, downloadFile } from './api'
-import { Dialog, Field, Notice, Spinner } from './ui'
+import { Dialog, Field, Notice, Spinner, useFlag } from './ui'
+import Icon from './icons'
 import { ACCEPTED_FILES, normalizeSerial, parseSerialFile, parseSerialText, unique } from './parseSerials'
 
 const SAMPLE = 60
@@ -18,6 +19,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
   const [removeText, setRemoveText] = useState('')
   const [confirmRemoveAll, setConfirmRemoveAll] = useState(false)
   const fileInput = useRef(null)
+  const [downloaded, flagDownloaded] = useFlag()
 
   useEffect(() => {
     setSerials(null)
@@ -98,6 +100,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
 
   function downloadCsv() {
     downloadFile(`tipo-batch-${batch.id}-serials.csv`, `Serial number\n${serials.join('\n')}\n`, 'text/csv')
+    flagDownloaded()
   }
 
   const looked = normalizeSerial(lookup)
@@ -118,7 +121,10 @@ export default function SerialsPanel({ batch, onBatchChange }) {
                 <span className="text-[1.6rem]" style={{ color: 'var(--a-gold-text)' }}>{serials.length.toLocaleString()}</span>{' '}
                 <span className="text-[0.85rem]" style={{ color: 'var(--a-muted)' }}>serial numbers registered in Batch {batch.id}</span>
               </p>
-              {serials.length > 0 && <button type="button" className="admin-btn quiet small" onClick={downloadCsv}>Download list (.csv)</button>}
+              {serials.length > 0 && <button type="button" className="admin-btn quiet small" onClick={downloadCsv}>
+                  <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
+                  {downloaded ? 'Downloaded' : 'Download list (.csv)'}
+                </button>}
             </div>
             {serials.length === 0 ? (
               <Notice tone="gold">
@@ -171,6 +177,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
               className="flex flex-col items-center justify-center gap-2 cursor-pointer text-center"
               style={{ border: '1.5px dashed #d8c48f', borderRadius: '10px', background: 'var(--a-gold-soft)', padding: '28px 16px', fontFamily: 'inherit', color: 'var(--a-text)' }}
             >
+              <Icon name="upload" size={28} style={{ color: 'var(--a-gold-text)' }} />
               <span className="text-[0.95rem]" style={{ color: 'var(--a-gold-text)' }}>{reading ? 'Reading file…' : 'Choose a file'}</span>
               <span className="text-[0.75rem]" style={{ color: 'var(--a-muted)' }}>Excel (.xlsx), CSV, text or PDF</span>
             </button>

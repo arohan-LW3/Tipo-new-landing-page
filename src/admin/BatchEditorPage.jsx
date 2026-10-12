@@ -4,18 +4,58 @@ import { adminApi, formatDate } from './api'
 import { AdminPage, Dialog, Field, Notice, Spinner, useLoggedOutRedirect } from './ui'
 import { LiveBadge } from './BatchesPage'
 import SerialsPanel from './SerialsPanel'
-import { TraceabilityTimeline, TIMELINE_BOTTOM_SPACE } from '../TraceabilityPage'
+import { TraceabilityTimeline, TIMELINE_BOTTOM_SPACE, SourceCard } from '../TraceabilityPage'
+import Icon from './icons'
 
-const BLANK_TILE = () => ({
-  title: '',
-  rows: [{ label: '', value: '', emphasis: true }, { label: '', value: '', emphasis: false }],
-  footer: { label: '', value: '' },
-})
+const MAX_ENTRIES = 10
+const BLANK_ENTRY = () => ({ label: '', place: '', coords: '' })
+const BLANK_TILE = () => ({ title: '', entries: [BLANK_ENTRY()], footer: { label: '', value: '' } })
 
 const clone = (v) => JSON.parse(JSON.stringify(v))
 
+// The website stores each card's body as rows: a large gold row (the place or
+// name) optionally followed by an unlabelled small row (its coordinates). The
+// editor works with "entries" instead — label, place, coordinates — so nobody
+// has to think about row styles.
+function rowsToEntries(rows) {
+  const entries = []
+  for (const row of rows) {
+    const last = entries[entries.length - 1]
+    if (!row.emphasis && !row.label && last && !last.coords) {
+      last.coords = row.value
+      continue
+    }
+    entries.push({ label: row.label, place: row.value, coords: '' })
+  }
+  return entries.length ? entries : [BLANK_ENTRY()]
+}
+
+function entriesToRows(entries) {
+  const rows = []
+  for (const e of entries) {
+    const label = e.label.trim()
+    const place = e.place.trim()
+    const coords = e.coords.trim()
+    if (label || place) rows.push({ label, value: place, emphasis: true })
+    if (coords) rows.push({ label: '', value: coords, emphasis: false })
+  }
+  return rows
+}
+
+function toEditorTile(tile) {
+  return { title: tile.title, entries: rowsToEntries(tile.rows), footer: { ...tile.footer } }
+}
+
+export function toSiteTile(tile) {
+  return {
+    title: tile.title.trim(),
+    rows: entriesToRows(tile.entries),
+    footer: { label: tile.footer.label.trim(), value: tile.footer.value.trim() },
+  }
+}
+
 function draftFrom(batch) {
-  return { id: batch.id, live: batch.live, tiles: clone(batch.tiles) }
+  return { id: batch.id, live: batch.live, tiles: batch.tiles.map(toEditorTile) }
 }
 
 export default function BatchEditorPage() {
@@ -45,7 +85,7 @@ export default function BatchEditorPage() {
         // steps repeat from batch to batch; "Start blank" clears them.
         const latest = batches[batches.length - 1]
         setSaved(null)
-        setDraft({ id: '', live: false, tiles: latest ? clone(latest.tiles) : [BLANK_TILE()] })
+        setDraft({ id: '', live: false, tiles: latest ? latest.tiles.map(toEditorTile) : [BLANK_TILE()] })
         setCopiedFrom(latest?.id || null)
         return
       }
@@ -87,7 +127,12 @@ export default function BatchEditorPage() {
     const list = []
     if (!draft.id.trim()) list.push('Enter a batch number.')
     if (draft.tiles.length === 0) list.push('Add at least one card.')
-    draft.tiles.forEach((t, i) => { if (!t.title.trim()) list.push(`Card ${i + 1} needs a title.`) })
+    draft.tiles.forEach((t, i) => {
+      if (!t.title.trim()) list.push(`Card ${i + 1} needs a title.`)
+      t.entries.forEach((e, j) => {
+        if (e.coords.trim() && !e.place.trim()) list.push(`Card ${i + 1}, entry ${j + 1}: add the place for these coordinates.`)
+      })
+    })
     return list
   }
 
@@ -109,7 +154,7 @@ export default function BatchEditorPage() {
         originalId: saved ? saved.id : null,
         id: draft.id,
         live: draft.live,
-        tiles: draft.tiles,
+        tiles: draft.tiles.map(toSiteTile),
         baseUpdatedAt: saved?.cardsUpdatedAt ?? null,
       })
       setSaved(batch)
@@ -249,7 +294,7 @@ export default function BatchEditorPage() {
           ))}
 
           <button type="button" className="admin-btn quiet w-full" onClick={() => update((d) => { d.tiles.push(BLANK_TILE()) })}>
-            + Add card
+            <Icon name="add" size={18} /> Add card
           </button>
         </div>
       )}
@@ -369,7 +414,7 @@ function Toggle({ checked, onChange, onText, offText }) {
   )
 }
 
-function IconButton({ label, onClick, disabled, children, danger }) {
+function IconButton({ label, icon, onClick, disabled, danger }) {
   return (
     <button
       type="button"
@@ -380,17 +425,28 @@ function IconButton({ label, onClick, disabled, children, danger }) {
       className="flex items-center justify-center bg-transparent cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
       style={{
         width: '34px', height: '34px', borderRadius: '4px', border: '1px solid var(--a-border)',
-        color: danger ? 'var(--a-danger)' : 'var(--a-text)', fontSize: '0.9rem', flexShrink: 0, fontFamily: 'inherit',
+        color: danger ? 'var(--a-danger)' : 'var(--a-text)', flexShrink: 0, fontFamily: 'inherit',
       }}
     >
-      {children}
+      <Icon name={icon} size={18} />
     </button>
   )
 }
 
 function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemove }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
-  const setRow = (r, fn) => onChange((t) => fn(t.rows[r]))
+  const siteTile = useMemo(() => toSiteTile(tile), [tile])
+  const setEntry = (j, fn) => onChange((t) => fn(t.entries[j]))
+  const moveEntry = (j, dir) => onChange((t) => { const [e] = t.entries.splice(j, 1); t.entries.splice(j + dir, 0, e) })
+
+  const cardActions = (
+    <>
+      <IconButton label="Move card up" icon="arrowUpward" disabled={index === 0} onClick={() => onMove(-1)} />
+      <IconButton label="Move card down" icon="arrowDownward" disabled={index === count - 1} onClick={() => onMove(1)} />
+      <IconButton label="Duplicate card" icon="contentCopy" onClick={onDuplicate} />
+      <IconButton label="Remove card" icon="delete" danger disabled={count === 1} onClick={() => setConfirmRemove(true)} />
+    </>
+  )
 
   return (
     <section className="admin-panel" style={{ overflow: 'hidden' }}>
@@ -411,73 +467,70 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
           onChange={(e) => onChange((t) => { t.title = e.target.value })}
           style={{ color: 'var(--a-gold-text)', fontSize: '1rem' }}
         />
-        <div className="hidden md:flex gap-1">
-          <IconButton label="Move card up" disabled={index === 0} onClick={() => onMove(-1)}>↑</IconButton>
-          <IconButton label="Move card down" disabled={index === count - 1} onClick={() => onMove(1)}>↓</IconButton>
-          <IconButton label="Duplicate card" onClick={onDuplicate}>⧉</IconButton>
-          <IconButton label="Remove card" danger disabled={count === 1} onClick={() => setConfirmRemove(true)}>×</IconButton>
-        </div>
+        <div className="hidden md:flex gap-1">{cardActions}</div>
       </div>
-      <div className="flex md:hidden gap-1 justify-end" style={{ padding: '8px 16px 0' }}>
-        <IconButton label="Move card up" disabled={index === 0} onClick={() => onMove(-1)}>↑</IconButton>
-        <IconButton label="Move card down" disabled={index === count - 1} onClick={() => onMove(1)}>↓</IconButton>
-        <IconButton label="Duplicate card" onClick={onDuplicate}>⧉</IconButton>
-        <IconButton label="Remove card" danger disabled={count === 1} onClick={() => setConfirmRemove(true)}>×</IconButton>
-      </div>
+      <div className="flex md:hidden gap-1 justify-end" style={{ padding: '8px 16px 0' }}>{cardActions}</div>
 
-      {/* Lines */}
-      <div className="flex flex-col gap-3" style={{ padding: '16px' }}>
-        <span className="admin-label">Details</span>
-        {tile.rows.map((row, r) => (
-          <div key={r} className="flex flex-col md:flex-row gap-2 md:items-center" style={{ paddingBottom: '12px', borderBottom: '1px dashed var(--a-border)' }}>
-            <input
-              className="admin-input md:w-[30%]"
-              aria-label="Label"
-              placeholder={r === 0 ? 'Label, e.g. Sourced from' : 'Label (optional)'}
-              value={row.label}
-              maxLength={60}
-              onChange={(e) => setRow(r, (x) => { x.label = e.target.value })}
-            />
-            <input
-              className="admin-input md:flex-1"
-              aria-label="Value"
-              placeholder={row.emphasis ? 'e.g. Memberchuk, Dhemaji' : 'e.g. 27.57°N, 94.74°E'}
-              value={row.value}
-              maxLength={120}
-              onChange={(e) => setRow(r, (x) => { x.value = e.target.value })}
-              style={row.emphasis ? { color: 'var(--a-gold-text)' } : undefined}
-            />
-            <div className="flex gap-2 items-center">
-              <StylePicker emphasis={row.emphasis} onChange={(v) => setRow(r, (x) => { x.emphasis = v })} />
-              <div className="flex gap-1 ml-auto">
-                <IconButton label="Move line up" disabled={r === 0} onClick={() => onChange((t) => { const [x] = t.rows.splice(r, 1); t.rows.splice(r - 1, 0, x) })}>↑</IconButton>
-                <IconButton label="Move line down" disabled={r === tile.rows.length - 1} onClick={() => onChange((t) => { const [x] = t.rows.splice(r, 1); t.rows.splice(r + 1, 0, x) })}>↓</IconButton>
-                <IconButton label="Remove line" danger onClick={() => onChange((t) => { t.rows.splice(r, 1) })}>×</IconButton>
+      {/* Entries: label, place, geo coordinates */}
+      <div className="flex flex-col gap-4" style={{ padding: '16px' }}>
+        {tile.entries.map((entry, j) => (
+          <div key={j} className="flex flex-col gap-2" style={{ paddingBottom: '14px', borderBottom: '1px dashed var(--a-border)' }}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="admin-label">Entry {j + 1}</span>
+              <div className="flex gap-1">
+                <IconButton label="Move entry up" icon="arrowUpward" disabled={j === 0} onClick={() => moveEntry(j, -1)} />
+                <IconButton label="Move entry down" icon="arrowDownward" disabled={j === tile.entries.length - 1} onClick={() => moveEntry(j, 1)} />
+                <IconButton label="Remove entry" icon="delete" danger onClick={() => onChange((t) => { t.entries.splice(j, 1) })} />
               </div>
+            </div>
+            <div className="grid gap-2 md:grid-cols-[1fr_1.3fr_1fr]">
+              <Field label="Label">
+                <input
+                  className="admin-input"
+                  placeholder="e.g. Sourced from"
+                  value={entry.label}
+                  maxLength={60}
+                  onChange={(e) => setEntry(j, (x) => { x.label = e.target.value })}
+                />
+              </Field>
+              <Field label="Place or name">
+                <input
+                  className="admin-input"
+                  placeholder="e.g. Memberchuk, Dhemaji"
+                  value={entry.place}
+                  maxLength={120}
+                  onChange={(e) => setEntry(j, (x) => { x.place = e.target.value })}
+                  style={{ color: 'var(--a-gold-text)' }}
+                />
+              </Field>
+              <Field label="Geo coordinates">
+                <input
+                  className="admin-input"
+                  placeholder="e.g. 27.57°N, 94.74°E"
+                  value={entry.coords}
+                  maxLength={120}
+                  onChange={(e) => setEntry(j, (x) => { x.coords = e.target.value })}
+                />
+              </Field>
             </div>
           </div>
         ))}
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-          <button
-            type="button"
-            className="admin-btn small"
-            disabled={tile.rows.length >= 12}
-            onClick={() => onChange((t) => { t.rows.push({ label: '', value: '', emphasis: false }) })}
-          >
-            + Add line
-          </button>
-          <span className="text-[0.72rem]" style={{ color: 'var(--a-muted)', lineHeight: 1.5 }}>
-            <span style={{ color: 'var(--a-gold-text)' }}>Large</span> = place or name (large, gold). Small = extra detail like coordinates. Leave the label empty to show a line under the one above.
-          </span>
-        </div>
+        <button
+          type="button"
+          className="admin-btn small self-start"
+          disabled={tile.entries.length >= MAX_ENTRIES}
+          onClick={() => onChange((t) => { t.entries.push(BLANK_ENTRY()) })}
+        >
+          <Icon name="add" size={18} /> Add entry
+        </button>
       </div>
 
       {/* Footer strip */}
       <div className="flex flex-col gap-2" style={{ padding: '16px', background: 'var(--a-surface)', borderTop: '1px solid var(--a-border)' }}>
         <span className="admin-label">Bottom line (date or duration)</span>
-        <div className="flex flex-col md:flex-row gap-2">
+        <div className="grid gap-2 md:grid-cols-[1fr_2.3fr]">
           <input
-            className="admin-input md:w-[30%]"
+            className="admin-input"
             aria-label="Bottom line label"
             placeholder="e.g. Collected on"
             value={tile.footer.label}
@@ -485,7 +538,7 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
             onChange={(e) => onChange((t) => { t.footer.label = e.target.value })}
           />
           <input
-            className="admin-input md:flex-1"
+            className="admin-input"
             aria-label="Bottom line value"
             placeholder="e.g. 09 Oct 2025 or 10 Hours"
             value={tile.footer.value}
@@ -493,6 +546,14 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
             onChange={(e) => onChange((t) => { t.footer.value = e.target.value })}
             style={{ color: 'var(--a-gold-text)' }}
           />
+        </div>
+      </div>
+
+      {/* Live preview of this card, exactly as customers see it */}
+      <div className="flex flex-col gap-3" style={{ padding: '16px', background: '#000', borderTop: '1px solid var(--a-border)' }}>
+        <span className="admin-label" style={{ color: 'rgba(255,255,255,0.5)' }}>Live preview</span>
+        <div className="w-full md:w-[401.59px] self-center">
+          <SourceCard tile={siteTile.title ? siteTile : { ...siteTile, title: 'Card title' }} isActive />
         </div>
       </div>
 
@@ -514,45 +575,11 @@ function CardEditor({ tile, index, count, onChange, onMove, onDuplicate, onRemov
   )
 }
 
-function StylePicker({ emphasis, onChange }) {
-  const option = (value, text) => (
-    <button
-      type="button"
-      onClick={() => onChange(value)}
-      aria-pressed={emphasis === value}
-      className="cursor-pointer text-[0.75rem]"
-      style={{
-        fontFamily: 'inherit',
-        padding: '0 10px',
-        height: '34px',
-        border: 'none',
-        background: emphasis === value ? (value ? 'var(--a-gold)' : 'var(--a-text)') : 'transparent',
-        color: emphasis === value ? (value ? '#1a1a1a' : '#fff') : 'var(--a-muted)',
-      }}
-    >
-      {text}
-    </button>
-  )
-  return (
-    <div className="flex" style={{ border: '1px solid var(--a-border)', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }} title="How this line looks on the card">
-      {option(true, 'Large')}
-      {option(false, 'Small')}
-    </div>
-  )
-}
-
 // Full-screen, dark preview using the real timeline component, so what the
 // owner approves is exactly what customers will see.
 function PreviewOverlay({ draft, publishing, onBack, onConfirm }) {
   const scrollRef = useRef(null)
-  // Blank lines are dropped on save, so leave them out of the preview too.
-  const tiles = useMemo(() => draft.tiles.map((t) => ({
-    title: t.title.trim(),
-    rows: t.rows
-      .map((r) => ({ ...r, label: r.label.trim(), value: r.value.trim() }))
-      .filter((r) => r.label || r.value),
-    footer: { label: t.footer.label.trim(), value: t.footer.value.trim() },
-  })), [draft.tiles])
+  const tiles = useMemo(() => draft.tiles.map(toSiteTile), [draft.tiles])
 
   useEffect(() => {
     const previous = document.body.style.overflow

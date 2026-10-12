@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminApi, downloadFile, formatDate } from './api'
-import { AdminPage, Dialog, Notice, Spinner, useLoggedOutRedirect } from './ui'
+import { AdminPage, Dialog, Notice, Spinner, useLoggedOutRedirect, useFlag } from './ui'
+import Icon from './icons'
 
 export default function BatchesPage() {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ export default function BatchesPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [importState, setImportState] = useState(null)
+  const [downloaded, flagDownloaded] = useFlag()
   const fileInput = useRef(null)
 
   const load = useCallback(() => {
@@ -36,6 +38,7 @@ export default function BatchesPage() {
     try {
       const body = await adminApi.exportData()
       downloadFile(`tipo-traceability-${body.exportedAt.slice(0, 10)}.json`, JSON.stringify(body, null, 2), 'application/json')
+      flagDownloaded()
       setMessage('Downloaded a copy of all batches and serial numbers. Keep this file safe — it can be uploaded again on any Tipo admin.')
     } catch (err) {
       setError(err.message)
@@ -101,7 +104,7 @@ export default function BatchesPage() {
           {user && <p className="text-[0.8rem]" style={{ color: 'var(--a-muted)', marginTop: '4px' }}>Logged in as {user}</p>}
         </div>
         <button type="button" className="admin-btn primary" onClick={() => navigate('/admin/batch/new')}>
-          + New batch
+          <Icon name="add" size={18} /> New batch
         </button>
       </div>
 
@@ -133,7 +136,10 @@ export default function BatchesPage() {
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[1.05rem]" style={{ color: 'var(--a-gold-text)' }}>Batch {b.id}</span>
-                  <LiveBadge live={b.live} />
+                  <span className="flex items-center gap-2">
+                    <LiveBadge live={b.live} />
+                    <Icon name="arrowForwardIos" size={16} style={{ color: 'var(--a-muted)' }} />
+                  </span>
                 </div>
                 <div className="flex gap-5 text-[0.8rem]">
                   <span><strong style={{ fontWeight: 'normal', fontSize: '1rem' }}>{b.tiles.length}</strong> <span style={{ color: 'var(--a-muted)' }}>cards</span></span>
@@ -154,8 +160,13 @@ export default function BatchesPage() {
           Download a file with every batch, card and serial number. Upload that file on another Tipo admin (for example after moving to a new server) to bring everything across.
         </p>
         <div className="flex flex-col md:flex-row gap-2" style={{ marginTop: '14px' }}>
-          <button type="button" className="admin-btn" onClick={exportAll}>Download all data</button>
-          <button type="button" className="admin-btn quiet" onClick={() => fileInput.current?.click()}>Upload data</button>
+          <button type="button" className="admin-btn" onClick={exportAll}>
+            <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
+            {downloaded ? 'Downloaded' : 'Download all data'}
+          </button>
+          <button type="button" className="admin-btn quiet" onClick={() => fileInput.current?.click()}>
+            <Icon name="upload" size={18} /> Upload data
+          </button>
           <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={pickImportFile} />
         </div>
       </section>

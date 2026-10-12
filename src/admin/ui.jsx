@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // Shared pieces of the light admin theme. Styles live in index.css under
@@ -126,4 +126,18 @@ export function useLoggedOutRedirect() {
 
 export function Spinner({ label = 'Loading…' }) {
   return <p className="text-[0.85rem]" style={{ color: 'var(--a-muted)', padding: '24px 0' }}>{label}</p>
+}
+
+// A true/false that switches itself back off after a moment, e.g. to show a
+// "Downloaded" tick on a button.
+export function useFlag(ms = 2500) {
+  const [on, setOn] = useState(false)
+  const timer = useRef(null)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const flag = () => {
+    setOn(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setOn(false), ms)
+  }
+  return [on, flag]
 }
