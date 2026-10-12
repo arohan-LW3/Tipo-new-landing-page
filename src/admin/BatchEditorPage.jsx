@@ -181,9 +181,7 @@ export default function BatchEditorPage() {
       </div>
 
       {/* Tabs */}
-      {/* Inset so the tab labels line up with the panel content below
-          (18px panel padding + 1px border, minus the tab's own 14px). */}
-      <div role="tablist" className="flex gap-1" style={{ borderBottom: '1px solid var(--a-border)', marginBottom: '22px', paddingLeft: '5px' }}>
+      <div role="tablist" className="flex gap-1" style={{ marginBottom: '22px' }}>
         <TabButton active={tab === 'cards'} onClick={() => setTab('cards')}>Batch &amp; cards</TabButton>
         <TabButton active={tab === 'serials'} onClick={() => setTab('serials')} disabled={!saved}>
           Serial numbers{saved ? ` (${saved.serialCount.toLocaleString()})` : ''}
@@ -347,7 +345,6 @@ function TabButton({ active, disabled, onClick, children }) {
       style={{
         fontFamily: 'inherit',
         padding: '10px 14px',
-        marginBottom: '-1px',
         color: disabled ? 'rgba(0,0,0,0.3)' : active ? 'var(--a-gold-text)' : 'var(--a-muted)',
         borderBottom: `2px solid ${active ? 'var(--a-gold)' : 'transparent'}`,
       }}
