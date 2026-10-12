@@ -119,7 +119,12 @@ export default function BatchesPage() {
       wide
       title="Traceability admin"
       onBack={() => navigate('/trace')}
-      actions={<button type="button" className="admin-btn quiet small" onClick={logout}>Log out</button>}
+      actions={(
+        <div className="flex items-center gap-2">
+          {user && <AdminAvatar name={user} />}
+          <button type="button" className="admin-btn quiet small" onClick={logout}>Log out</button>
+        </div>
+      )}
     >
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4" style={{ marginBottom: '22px' }}>
         <div>
@@ -270,6 +275,24 @@ async function readDataFile(file) {
   const json = Object.keys(files).find((name) => name.toLowerCase().endsWith('.json'))
   if (!json) throw new Error('No data file in the ZIP')
   return strFromU8(files[json])
+}
+
+// Round badge for the logged-in admin, showing the first letter of their
+// username (there are no profile photos; accounts come from ADMIN_USERS).
+function AdminAvatar({ name }) {
+  return (
+    <span
+      title={`Logged in as ${name}`}
+      aria-label={`Logged in as ${name}`}
+      className="flex items-center justify-center text-[0.9rem] uppercase select-none"
+      style={{
+        width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+        background: 'var(--a-gold-soft)', border: '1px solid var(--a-gold)', color: 'var(--a-gold-text)',
+      }}
+    >
+      {name.trim().charAt(0)}
+    </span>
+  )
 }
 
 export function LiveBadge({ live }) {
