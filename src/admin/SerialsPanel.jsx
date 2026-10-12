@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { adminApi, downloadFile } from './api'
-import { Dialog, Field, Notice, Spinner, useFlag } from './ui'
+import { Dialog, Field, Notice, Spinner } from './ui'
+import DownloadMenu from './DownloadMenu'
+import { SERIAL_FORMATS, buildSerialExport, serialFileName } from './exporters'
 import Icon from './icons'
 import { ACCEPTED_FILES, normalizeSerial, parseSerialFile, parseSerialText, unique } from './parseSerials'
 
@@ -19,7 +21,6 @@ export default function SerialsPanel({ batch, onBatchChange }) {
   const [removeList, setRemoveList] = useState([''])  // one serial per box
   const [confirmRemoveAll, setConfirmRemoveAll] = useState(false)
   const fileInput = useRef(null)
-  const [downloaded, flagDownloaded] = useFlag()
 
   useEffect(() => {
     setSerials(null)
@@ -98,9 +99,14 @@ export default function SerialsPanel({ batch, onBatchChange }) {
     }
   }
 
-  function downloadCsv() {
-    downloadFile(`tipo-batch-${batch.id}-serials.csv`, `Serial number\n${serials.join('\n')}\n`, 'text/csv')
-    flagDownloaded()
+  async function downloadSerials(format) {
+    try {
+      const file = await buildSerialExport(batch.id, serials, format.key)
+      downloadFile(serialFileName(batch.id, format.ext), file, file.type)
+    } catch (err) {
+      setError(err.message || "Couldn't create the download. Please try again.")
+      return false
+    }
   }
 
   const looked = normalizeSerial(lookup)
@@ -120,10 +126,7 @@ export default function SerialsPanel({ batch, onBatchChange }) {
               <p className="text-[0.95rem]">
                 <Gold>'{serials.length.toLocaleString()}'</Gold> serial number{serials.length === 1 ? '' : 's'} registered in <Gold>'Batch {batch.id}'</Gold>
               </p>
-              {serials.length > 0 && <button type="button" className="admin-btn quiet small" onClick={downloadCsv}>
-                  <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
-                  {downloaded ? 'Downloaded' : 'Download list (.csv)'}
-                </button>}
+              {serials.length > 0 && <DownloadMenu small label="Download list" formats={SERIAL_FORMATS} onPick={downloadSerials} />}
             </div>
             {serials.length === 0 ? (
               <Notice tone="gold">

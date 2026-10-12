@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminApi, downloadFile, formatDate } from './api'
-import { AdminPage, Dialog, Notice, Spinner, useLoggedOutRedirect, useFlag } from './ui'
+import { AdminPage, Dialog, Notice, Spinner, useLoggedOutRedirect } from './ui'
+import DownloadMenu from './DownloadMenu'
 import Icon from './icons'
 import { EXPORT_FORMATS, buildExport, fileName } from './exporters'
 
@@ -13,22 +14,6 @@ export default function BatchesPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [importState, setImportState] = useState(null)
-  const [downloaded, flagDownloaded] = useFlag()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [exporting, setExporting] = useState(null)
-  const menuRef = useRef(null)
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const close = (e) => { if (!menuRef.current?.contains(e.target)) setMenuOpen(false) }
-    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false) }
-    document.addEventListener('mousedown', close)
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', close)
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [menuOpen])
   const fileInput = useRef(null)
 
   const load = useCallback(() => {
@@ -50,21 +35,17 @@ export default function BatchesPage() {
   }
 
   async function exportAll(format) {
-    setMenuOpen(false)
     setError('')
-    setExporting(format.key)
     try {
       const body = await adminApi.exportData()
       const file = await buildExport(body, format.key)
       downloadFile(fileName(body, format.ext), file, file.type)
-      flagDownloaded()
-      setMessage(format.key === 'csv' || format.key === 'pdf'
+      setMessage(format.key !== 'json' && format.key !== 'zip'
         ? `Downloaded all data as ${format.label}. To upload data back later, use the JSON (or ZIP) download.`
         : `Downloaded all data as ${format.label}. Keep this file safe - it can be uploaded again on any Tipo admin.`)
     } catch (err) {
       setError(err.message || "Couldn't create the download. Please try again.")
-    } finally {
-      setExporting(null)
+      return false
     }
   }
 
@@ -189,43 +170,7 @@ export default function BatchesPage() {
           Download a file with every batch, card and serial number. Upload that file on another Tipo admin (for example after moving to a new server) to bring everything across.
         </p>
         <div className="flex flex-col md:flex-row gap-2" style={{ marginTop: '14px' }}>
-          <div ref={menuRef} style={{ position: 'relative' }}>
-            <button
-              type="button"
-              className="admin-btn w-full"
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              disabled={Boolean(exporting)}
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              <Icon name={downloaded ? 'downloadDone' : 'download'} size={18} />
-              {exporting ? 'Preparing…' : downloaded ? 'Downloaded' : 'Download all data'}
-            </button>
-            {menuOpen && (
-              <div
-                role="menu"
-                className="admin-panel flex flex-col"
-                style={{ position: 'absolute', left: 0, bottom: 'calc(100% + 6px)', zIndex: 20, width: 'min(340px, calc(100vw - 40px))', padding: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
-              >
-                {EXPORT_FORMATS.map((f) => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    role="menuitem"
-                    onClick={() => exportAll(f)}
-                    className="flex items-start gap-3 text-left bg-transparent border-none cursor-pointer hover:bg-[var(--a-gold-soft)]"
-                    style={{ padding: '10px', borderRadius: '8px', fontFamily: 'inherit', color: 'var(--a-text)' }}
-                  >
-                    <Icon name="download" size={18} style={{ color: 'var(--a-gold-text)', marginTop: '1px' }} />
-                    <span>
-                      <span className="block text-[0.88rem]">{f.label} <span style={{ color: 'var(--a-muted)' }}>.{f.ext}</span></span>
-                      <span className="block text-[0.74rem]" style={{ color: 'var(--a-muted)', lineHeight: 1.45 }}>{f.text}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <DownloadMenu label="Download all data" formats={EXPORT_FORMATS} onPick={exportAll} openUp />
           <button type="button" className="admin-btn quiet" onClick={() => fileInput.current?.click()}>
             <Icon name="upload" size={18} /> Upload data
           </button>
